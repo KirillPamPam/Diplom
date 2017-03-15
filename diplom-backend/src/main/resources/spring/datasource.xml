@@ -17,8 +17,8 @@
               <property name="dataSource" ref="datasource"/>
               <property name="annotatedClasses">
                      <list>
-                            <value>ru.kir.diplom.backend.model.SingleSource</value>
-                            <value>ru.kir.diplom.backend.model.TextFragment</value>
+                            <value>ru.kir.ru.kir.diplom.backend.model.SingleSource</value>
+                            <value>ru.kir.ru.kir.diplom.backend.model.TextFragment</value>
                      </list>
               </property>
               <property name="hibernateProperties">

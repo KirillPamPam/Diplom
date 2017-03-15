@@ -6,25 +6,23 @@
 
     <parent>
         <groupId>ru.kir</groupId>
-        <artifactId>main-parent</artifactId>
-        <relativePath>main-parent/pom.xml</relativePath>
+        <artifactId>diplom-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <relativePath>../diplom-parent/pom.xml</relativePath>
     </parent>
 
-    <artifactId>diplom-build-documentation</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>diplom-client</artifactId>
+    <packaging>jar</packaging>
 
-    <modules>
-        <module>main-parent</module>
-        <module>diplom-parent</module>
-        <module>diplom-backend</module>
-        <module>diplom-client</module>
-    </modules>
+    <dependencies>
+
+    </dependencies>
 
     <build>
         <plugins>
 
         </plugins>
     </build>
+
 
 </project>
