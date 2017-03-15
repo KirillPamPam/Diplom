@@ -43,5 +43,13 @@ public class SingleSource {
     public void setSingleName(String singleName) {
         this.singleName = singleName;
     }
-    
+
+    @Override
+    public String toString() {
+        return "SingleSource{" +
+                "id=" + id +
+                ", singleName='" + singleName + '\'' +
+                ", textFragments=" + textFragments +
+                '}';
+    }
 }
