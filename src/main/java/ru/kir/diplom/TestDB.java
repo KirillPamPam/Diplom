@@ -13,6 +13,6 @@ public class TestDB {
         ApplicationContext context = new GenericXmlApplicationContext("/spring/app-context-config.xml");
         TextFragmentService service = context.getBean("textService", TextFragmentService.class);
         SingleSourceService sourceService = (SingleSourceService) context.getBean("singleService");
-        sourceService.deleteSingleSource("test");
+        sourceService.getAll().forEach(source -> System.out.println(source.getTextFragments()));
     }
 }

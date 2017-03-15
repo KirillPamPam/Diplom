@@ -16,7 +16,7 @@ public class TextFragment {
     @Column(name = "text")
     private String text;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "single_id")
     private SingleSource singleSource;
 
@@ -53,5 +53,14 @@ public class TextFragment {
 
     public void setFragmentName(String fragmentName) {
         this.fragmentName = fragmentName;
+    }
+
+    @Override
+    public String toString() {
+        return "TextFragment{" +
+                "id=" + id +
+                ", text='" + text + '\'' +
+                ", fragmentName='" + fragmentName + '\'' +
+                '}';
     }
 }
