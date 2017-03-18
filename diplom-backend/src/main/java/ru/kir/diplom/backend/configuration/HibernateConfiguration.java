@@ -48,9 +48,10 @@ public class HibernateConfiguration {
     }
 
     @Bean
-    public LocalSessionFactoryBean sessionFactory() {
+    @Autowired
+    public LocalSessionFactoryBean sessionFactory(DataSource dataSource) {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        sessionFactory.setDataSource(dataSource());
+        sessionFactory.setDataSource(dataSource);
         sessionFactory.setPackagesToScan("ru.kir.diplom.backend.model");
         sessionFactory.setHibernateProperties(hibernateProperties());
 
