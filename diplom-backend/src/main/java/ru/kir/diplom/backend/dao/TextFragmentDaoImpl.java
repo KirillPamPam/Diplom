@@ -5,6 +5,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import ru.kir.diplom.backend.model.SingleSource;
 import ru.kir.diplom.backend.model.TextFragment;
 
 import java.util.List;
@@ -35,6 +36,14 @@ public class TextFragmentDaoImpl implements TextFragmentDao {
     public List<TextFragment> getAll() {
         Session session = sessionFactory.getCurrentSession();
         return session.createCriteria(TextFragment.class).list();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<TextFragment> getAll(SingleSource singleSource) {
+        Session session = sessionFactory.getCurrentSession();
+        return session.createCriteria(TextFragment.class)
+                .add(Restrictions.eq("singleSource", singleSource)).list();
     }
 
     @Override

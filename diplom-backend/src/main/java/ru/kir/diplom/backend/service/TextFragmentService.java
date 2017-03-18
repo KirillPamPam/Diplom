@@ -1,6 +1,8 @@
 package ru.kir.diplom.backend.service;
 
+import ru.kir.diplom.backend.model.SingleSource;
 import ru.kir.diplom.backend.model.TextFragment;
+import ru.kir.diplom.backend.model.client.ClientTextFragment;
 
 import java.util.List;
 
@@ -10,9 +12,11 @@ import java.util.List;
 public interface TextFragmentService {
     void createTextFragment(TextFragment textFragment);
 
-    TextFragment getTextFragment(String name);
+    ClientTextFragment getTextFragment(String name);
 
-    List<TextFragment> getAll();
+    List<ClientTextFragment> getAll();
+
+    List<ClientTextFragment> getAll(SingleSource singleSource);
 
     void deleteTextFragment(TextFragment textFragment);
 

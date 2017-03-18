@@ -1,5 +1,6 @@
 package ru.kir.diplom.backend.dao;
 
+import ru.kir.diplom.backend.model.SingleSource;
 import ru.kir.diplom.backend.model.TextFragment;
 
 import java.util.List;
@@ -13,6 +14,8 @@ public interface TextFragmentDao {
     TextFragment getTextFragment(String name);
 
     List<TextFragment> getAll();
+
+    List<TextFragment> getAll(SingleSource singleSource);
 
     void deleteTextFragment(TextFragment textFragment);
 

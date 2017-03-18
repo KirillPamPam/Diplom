@@ -1,6 +1,7 @@
 package ru.kir.diplom.backend.service;
 
 import ru.kir.diplom.backend.model.SingleSource;
+import ru.kir.diplom.backend.model.client.ClientSingleSource;
 
 import java.util.List;
 
@@ -12,9 +13,11 @@ public interface SingleSourceService {
 
     SingleSource getSingleSource(String name);
 
+    ClientSingleSource getClientSingleSource(String name);
+
     void deleteSingleSource(String name);
 
     void updateSingleSource(SingleSource source);
 
-    List<SingleSource> getAll();
+    List<ClientSingleSource> getAll();
 }
