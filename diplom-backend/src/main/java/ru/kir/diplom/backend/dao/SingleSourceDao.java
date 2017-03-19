@@ -10,9 +10,11 @@ import java.util.List;
 public interface SingleSourceDao {
     void createSingleSource(SingleSource source);
 
-    SingleSource getSingleSource(String name);
+    SingleSource getSingleSourceByName(String name);
 
-    void deleteSingleSource(String name);
+    SingleSource getSingleSourceById(String id);
+
+    void deleteSingleSource(SingleSource source);
 
     void updateSingleSource(SingleSource source);
 

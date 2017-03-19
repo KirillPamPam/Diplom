@@ -7,6 +7,7 @@ import java.util.Objects;
  * Created by Kirill Zhitelev on 18.03.2017.
  */
 public class ClientSingleSource {
+    private String id;
     private String singleName;
     private List<ClientTextFragment> textFragments;
 
@@ -26,17 +27,26 @@ public class ClientSingleSource {
         this.textFragments = textFragments;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ClientSingleSource that = (ClientSingleSource) o;
-        return Objects.equals(singleName, that.singleName) &&
+        return Objects.equals(id, that.id) &&
+                Objects.equals(singleName, that.singleName) &&
                 Objects.equals(textFragments, that.textFragments);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(singleName, textFragments);
+        return Objects.hash(id, singleName, textFragments);
     }
 }

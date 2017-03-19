@@ -1,5 +1,7 @@
 package ru.kir.diplom.backend.model;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 import javax.persistence.*;
 import java.util.Set;
 
@@ -8,6 +10,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "single_sources")
+@DynamicUpdate
 public class SingleSource {
     @Id
     @Column(name = "single_id")

@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.kir.diplom.backend.dao.SingleSourceDao;
 import ru.kir.diplom.backend.model.SingleSource;
 import ru.kir.diplom.backend.model.client.ClientSingleSource;
+import ru.kir.diplom.backend.model.rest.RequestCreateSingleSource;
+import ru.kir.diplom.backend.model.rest.RequestUpdateSingleSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,28 +24,35 @@ public class SingleSourceServiceImpl implements SingleSourceService {
     private ModelMapper mapper = new ModelMapper();
 
     @Override
-    public void createSingleSource(SingleSource source) {
-        singleSourceDao.createSingleSource(source);
+    public void createSingleSource(RequestCreateSingleSource source) {
+        SingleSource singleSource = new SingleSource();
+        singleSource.setSingleName(source.getName());
+        singleSourceDao.createSingleSource(singleSource);
     }
 
     @Override
     public SingleSource getSingleSource(String name) {
-        return singleSourceDao.getSingleSource(name);
+        return singleSourceDao.getSingleSourceByName(name);
     }
 
     @Override
     public ClientSingleSource getClientSingleSource(String name) {
-        return mapper.map(singleSourceDao.getSingleSource(name), ClientSingleSource.class);
+        SingleSource singleSource = singleSourceDao.getSingleSourceByName(name);
+        if(singleSource == null)
+            return null;
+        return mapper.map(singleSource, ClientSingleSource.class);
     }
 
     @Override
-    public void deleteSingleSource(String name) {
-        singleSourceDao.deleteSingleSource(name);
+    public void deleteSingleSource(String id) {
+        singleSourceDao.deleteSingleSource(singleSourceDao.getSingleSourceById(id));
     }
 
     @Override
-    public void updateSingleSource(SingleSource source) {
-        singleSourceDao.updateSingleSource(source);
+    public void updateSingleSource(String id, RequestUpdateSingleSource source) {
+        SingleSource singleSource = singleSourceDao.getSingleSourceById(id);
+        singleSource.setSingleName(source.getName());
+        singleSourceDao.updateSingleSource(singleSource);
     }
 
     @Override

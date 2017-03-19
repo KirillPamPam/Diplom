@@ -11,7 +11,9 @@ import java.util.List;
 public interface TextFragmentDao {
     void createTextFragment(TextFragment textFragment);
 
-    TextFragment getTextFragment(String name);
+    TextFragment getTextFragmentByName(String name);
+
+    TextFragment getTextFragmentById(String id);
 
     List<TextFragment> getAll();
 

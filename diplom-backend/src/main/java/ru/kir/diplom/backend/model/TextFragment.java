@@ -1,5 +1,7 @@
 package ru.kir.diplom.backend.model;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 import javax.persistence.*;
 
 /**
@@ -7,6 +9,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "text_fragments")
+@DynamicUpdate
 public class TextFragment {
     @Id
     @Column(name = "text_id")

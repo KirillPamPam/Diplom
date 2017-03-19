@@ -25,10 +25,16 @@ public class TextFragmentDaoImpl implements TextFragmentDao {
     }
 
     @Override
-    public TextFragment getTextFragment(String name) {
+    public TextFragment getTextFragmentByName(String name) {
         Session session = sessionFactory.getCurrentSession();
         return (TextFragment) session.createCriteria(TextFragment.class)
                 .add(Restrictions.eq("fragmentName", name)).uniqueResult();
+    }
+
+    @Override
+    public TextFragment getTextFragmentById(String id) {
+        Session session = sessionFactory.getCurrentSession();
+        return (TextFragment) session.get(TextFragment.class, Integer.parseInt(id));
     }
 
     @Override

@@ -6,6 +6,7 @@ import java.util.Objects;
  * Created by Kirill Zhitelev on 18.03.2017.
  */
 public class ClientTextFragment {
+    private String id;
     private String fragmentName;
     private String text;
 
@@ -25,17 +26,26 @@ public class ClientTextFragment {
         this.text = text;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ClientTextFragment that = (ClientTextFragment) o;
-        return Objects.equals(fragmentName, that.fragmentName) &&
+        return Objects.equals(id, that.id) &&
+                Objects.equals(fragmentName, that.fragmentName) &&
                 Objects.equals(text, that.text);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fragmentName, text);
+        return Objects.hash(id, fragmentName, text);
     }
 }

@@ -24,16 +24,21 @@ public class SingleSourceDaoImpl implements SingleSourceDao {
     }
 
     @Override
-    public SingleSource getSingleSource(String name) {
+    public SingleSource getSingleSourceByName(String name) {
         Session session = sessionFactory.getCurrentSession();
         return (SingleSource) session.createCriteria(SingleSource.class)
                 .add(Restrictions.eq("singleName", name)).uniqueResult();
     }
 
     @Override
-    public void deleteSingleSource(String name) {
+    public SingleSource getSingleSourceById(String id) {
         Session session = sessionFactory.getCurrentSession();
-        SingleSource source = getSingleSource(name);
+        return (SingleSource) session.get(SingleSource.class, id);
+    }
+
+    @Override
+    public void deleteSingleSource(SingleSource source) {
+        Session session = sessionFactory.getCurrentSession();
         session.delete(source);
     }
 
