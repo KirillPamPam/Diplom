@@ -17,9 +17,9 @@ public interface SingleSourceService {
 
     ClientSingleSource getClientSingleSource(String name);
 
-    void deleteSingleSource(String id);
+    boolean deleteSingleSource(String id);
 
-    void updateSingleSource(String id, RequestUpdateSingleSource source);
+    boolean updateSingleSource(String id, RequestUpdateSingleSource source);
 
     List<ClientSingleSource> getAll();
 }

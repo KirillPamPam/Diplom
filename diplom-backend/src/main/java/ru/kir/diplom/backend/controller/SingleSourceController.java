@@ -31,8 +31,8 @@ public class SingleSourceController {
     @Autowired
     private SingleSourceService sourceService;
 
-    @RequestMapping(value = "get/fragment", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody ClientTextFragment getTextFragment(@RequestParam(Constants.ID) String id) {
+    @RequestMapping(value = "get/fragment/{id}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody ClientTextFragment getTextFragment(@PathVariable(Constants.ID) String id) {
         ClientTextFragment textFragment = fragmentService.getClientTextFragmentById(id);
 
         if(textFragment == null)
@@ -41,14 +41,14 @@ public class SingleSourceController {
         return textFragment;
     }
 
-    @RequestMapping(value = "getall/fragments", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody List<ClientTextFragment> getAllTextFragment(@RequestParam(Constants.SOURCE_NAME) String singleSource) {
+    @RequestMapping(value = "getall/fragment/{sourceName}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody List<ClientTextFragment> getAllTextFragment(@PathVariable(Constants.SOURCE_NAME) String singleSource) {
         SingleSource source = sourceService.getSingleSource(singleSource);
         return fragmentService.getAll(source);
     }
 
-    @RequestMapping(value = "get/source", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody ClientSingleSource getSingleSource(@RequestParam(Constants.NAME) String name) {
+    @RequestMapping(value = "get/source/{name}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody ClientSingleSource getSingleSource(@PathVariable(Constants.NAME) String name) {
         ClientSingleSource singleSource = sourceService.getClientSingleSource(name);
 
         if(singleSource == null) {
@@ -87,14 +87,12 @@ public class SingleSourceController {
         if (result.hasErrors()) {
             throw new InvalidRequestException(Constants.INVALID_REQUEST, result);
         }
-        TextFragment searchingFragment = fragmentService.getTextFragmentById(textFragment.getId());
-        if (searchingFragment == null) {
+        boolean isUpdate = fragmentService.updateTextFragment(textFragment.getId(), textFragment);
+
+        if (!isUpdate) {
             throw new NullRequestException(Constants.WRONG_ID, textFragment.getId(), TextFragment.class, Constants.ID);
         }
-        else {
-            fragmentService.updateTextFragment(textFragment, searchingFragment);
-            return getOkResponse();
-        }
+        return getOkResponse();
     }
 
     @RequestMapping(value = "delete/fragment", method = RequestMethod.POST,
@@ -103,21 +101,18 @@ public class SingleSourceController {
         if (result.hasErrors()) {
             throw new InvalidRequestException(Constants.INVALID_REQUEST, result);
         }
-        TextFragment searchingFragment = fragmentService.getTextFragmentById(textFragment.getId());
-        if (searchingFragment == null) {
+        boolean isDeleted = fragmentService.deleteTextFragment(textFragment.getId());
+        if (!isDeleted) {
             throw new NullRequestException(Constants.WRONG_ID, textFragment.getId(), TextFragment.class, Constants.ID);
         }
-        else {
-            fragmentService.deleteTextFragment(searchingFragment);
-            return getOkResponse();
-        }
+        return getOkResponse();
     }
 
     @RequestMapping(value = "create/source", method = RequestMethod.POST,
             produces = "application/json", consumes = "application/json")
     public ResponseEntity createSingleSource(@RequestBody @Valid RequestCreateSingleSource singleSource, BindingResult result) {
         if(result.hasErrors()) {
-            throw new InvalidRequestException("Invalid request", result);
+            throw new InvalidRequestException(Constants.INVALID_REQUEST, result);
         }
         else {
             sourceService.createSingleSource(singleSource);
@@ -129,24 +124,26 @@ public class SingleSourceController {
             produces = "application/json", consumes = "application/json")
     public ResponseEntity deleteSingleSource(@RequestBody @Valid RequestDeleteSingleSource singleSource, BindingResult result) {
         if(result.hasErrors()) {
-            throw new InvalidRequestException("Invalid request", result);
+            throw new InvalidRequestException(Constants.INVALID_REQUEST, result);
         }
-        else {
-            sourceService.deleteSingleSource(singleSource.getId());
-            return getOkResponse();
+        boolean isDeleted = sourceService.deleteSingleSource(singleSource.getId());
+        if (!isDeleted) {
+            throw new NullRequestException(Constants.WRONG_ID, singleSource.getId(), SingleSource.class, Constants.ID);
         }
+        return getOkResponse();
     }
 
     @RequestMapping(value = "update/source", method = RequestMethod.POST,
             produces = "application/json", consumes = "application/json")
     public ResponseEntity updateSingleSource(@RequestBody @Valid RequestUpdateSingleSource singleSource, BindingResult result) {
         if(result.hasErrors()) {
-            throw new InvalidRequestException("Invalid request", result);
+            throw new InvalidRequestException(Constants.INVALID_REQUEST, result);
         }
-        else {
-            sourceService.updateSingleSource(singleSource.getId(), singleSource);
-            return getOkResponse();
+        boolean isUpdated = sourceService.updateSingleSource(singleSource.getId(), singleSource);
+        if (!isUpdated) {
+            throw new NullRequestException(Constants.WRONG_ID, singleSource.getId(), SingleSource.class, Constants.ID);
         }
+        return getOkResponse();
     }
 
     private ResponseEntity getOkResponse() {

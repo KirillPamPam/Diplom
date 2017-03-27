@@ -70,15 +70,23 @@ public class TextFragmentServiceImpl implements TextFragmentService {
     }
 
     @Override
-    public void deleteTextFragment(TextFragment searchingFragment) {
-        textFragmentDao.deleteTextFragment(searchingFragment);
+    public boolean deleteTextFragment(String id) {
+        TextFragment textFragment = textFragmentDao.getTextFragmentById(id);
+        if (textFragment == null)
+            return false;
+        textFragmentDao.deleteTextFragment(textFragment);
+        return true;
     }
 
     @Override
-    public void updateTextFragment(RequestUpdateTextFragment newTextFragment, TextFragment searchingFragment) {
-        searchingFragment.setText(newTextFragment.getText());
-        searchingFragment.setFragmentName(newTextFragment.getFragmentName());
+    public boolean updateTextFragment(String id, RequestUpdateTextFragment newTextFragment) {
+        TextFragment textFragment = textFragmentDao.getTextFragmentById(id);
+        if (textFragment == null)
+            return false;
+        textFragment.setText(newTextFragment.getText());
+        textFragment.setFragmentName(newTextFragment.getFragmentName());
 
-        textFragmentDao.updateTextFragment(searchingFragment);
+        textFragmentDao.updateTextFragment(textFragment);
+        return true;
     }
 }

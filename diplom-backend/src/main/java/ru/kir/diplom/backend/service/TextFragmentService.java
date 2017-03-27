@@ -22,7 +22,7 @@ public interface TextFragmentService {
 
     List<ClientTextFragment> getAll(SingleSource singleSource);
 
-    void deleteTextFragment(TextFragment searchingFragment);
+    boolean deleteTextFragment(String id);
 
-    void updateTextFragment(RequestUpdateTextFragment newTextFragment, TextFragment searchingFragment);
+    boolean updateTextFragment(String id, RequestUpdateTextFragment newTextFragment);
 }

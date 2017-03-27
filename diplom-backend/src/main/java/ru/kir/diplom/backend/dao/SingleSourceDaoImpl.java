@@ -33,7 +33,7 @@ public class SingleSourceDaoImpl implements SingleSourceDao {
     @Override
     public SingleSource getSingleSourceById(String id) {
         Session session = sessionFactory.getCurrentSession();
-        return (SingleSource) session.get(SingleSource.class, id);
+        return (SingleSource) session.get(SingleSource.class, Integer.parseInt(id));
     }
 
     @Override

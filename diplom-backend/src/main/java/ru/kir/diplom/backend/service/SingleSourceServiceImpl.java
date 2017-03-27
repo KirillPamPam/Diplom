@@ -44,15 +44,22 @@ public class SingleSourceServiceImpl implements SingleSourceService {
     }
 
     @Override
-    public void deleteSingleSource(String id) {
-        singleSourceDao.deleteSingleSource(singleSourceDao.getSingleSourceById(id));
+    public boolean deleteSingleSource(String id) {
+        SingleSource singleSource = singleSourceDao.getSingleSourceById(id);
+        if (singleSource == null)
+            return false;
+        singleSourceDao.deleteSingleSource(singleSource);
+        return true;
     }
 
     @Override
-    public void updateSingleSource(String id, RequestUpdateSingleSource source) {
+    public boolean updateSingleSource(String id, RequestUpdateSingleSource source) {
         SingleSource singleSource = singleSourceDao.getSingleSourceById(id);
+        if (singleSource == null)
+            return false;
         singleSource.setSingleName(source.getName());
         singleSourceDao.updateSingleSource(singleSource);
+        return true;
     }
 
     @Override
