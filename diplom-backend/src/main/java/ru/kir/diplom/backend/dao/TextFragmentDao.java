@@ -15,6 +15,8 @@ public interface TextFragmentDao {
 
     TextFragment getTextFragmentById(String id);
 
+    List<TextFragment> getTextFragmentsByPattern(String pattern);
+
     List<TextFragment> getAll();
 
     List<TextFragment> getAll(SingleSource singleSource);

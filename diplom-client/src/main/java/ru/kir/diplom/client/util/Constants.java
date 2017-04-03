@@ -7,6 +7,7 @@ public class Constants {
     public static final String MAIN_PATH = "http://localhost:8080/documentation-build/singlesource/operations";
 
     public static final String GET_TEXT_FRAGMENT = "/get/fragment/";
+    public static final String GET_TEXT_FRAGMENT_BY_PATTERN = "/get/fragment/pattern/";
     public static final String GET_ALL_TEXT_FRAGMENT = "/getall/fragment/";
     public static final String GET_SINGLE_SOURCE = "/get/source/";
     public static final String GET_ALL_SINGLE_SOURCE = "/getall/source/";

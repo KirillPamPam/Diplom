@@ -22,6 +22,8 @@ public interface TextFragmentService {
 
     List<ClientTextFragment> getAll(SingleSource singleSource);
 
+    List<ClientTextFragment> getTextFragmentsByPattern(String pattern);
+
     boolean deleteTextFragment(String id);
 
     boolean updateTextFragment(String id, RequestUpdateTextFragment newTextFragment);

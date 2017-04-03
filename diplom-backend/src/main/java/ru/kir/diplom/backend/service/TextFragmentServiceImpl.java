@@ -70,6 +70,15 @@ public class TextFragmentServiceImpl implements TextFragmentService {
     }
 
     @Override
+    public List<ClientTextFragment> getTextFragmentsByPattern(String pattern) {
+        List<TextFragment> textFragments = textFragmentDao.getTextFragmentsByPattern(pattern);
+        List<ClientTextFragment> clientTextFragments = new ArrayList<>();
+        textFragments.forEach(textFragment -> clientTextFragments.add(mapper.map(textFragment, ClientTextFragment.class)));
+
+        return clientTextFragments;
+    }
+
+    @Override
     public boolean deleteTextFragment(String id) {
         TextFragment textFragment = textFragmentDao.getTextFragmentById(id);
         if (textFragment == null)

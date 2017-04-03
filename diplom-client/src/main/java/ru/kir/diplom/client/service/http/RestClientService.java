@@ -41,6 +41,13 @@ public class RestClientService {
         return response.getEntity(TextFragment.class);
     }
 
+    public List<TextFragment> getTextFragmentsByPattern(String pattern) {
+        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.GET_TEXT_FRAGMENT_BY_PATTERN + pattern);
+        ClientResponse response = webResource.get(ClientResponse.class);
+
+        return response.getEntity(new GenericType<List<TextFragment>>() {});
+    }
+
     public List<TextFragment> getAllTextFragments(String sourceName) {
         WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.GET_ALL_TEXT_FRAGMENT + sourceName);
         ClientResponse response = webResource.get(ClientResponse.class);
