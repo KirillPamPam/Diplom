@@ -20,9 +20,17 @@ import java.util.List;
  */
 public class RestClientService {
     private Client client;
+    private static RestClientService restClientService;
 
-    public RestClientService() {
+    private RestClientService() {
         init();
+    }
+
+    public static RestClientService getInstance() {
+        if (restClientService == null)
+            restClientService = new RestClientService();
+
+        return restClientService;
     }
 
     private void init() {
