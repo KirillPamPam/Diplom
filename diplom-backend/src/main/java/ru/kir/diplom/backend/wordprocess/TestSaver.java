@@ -8,12 +8,8 @@ import org.docx4j.toc.Toc;
 import org.docx4j.toc.TocException;
 import org.docx4j.toc.TocGenerator;
 import org.docx4j.wml.*;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import ru.kir.diplom.NumberingRestart;
 import ru.kir.diplom.backend.model.TextProperties;
-import ru.kir.diplom.backend.model.client.ClientTextFragment;
-import ru.kir.diplom.backend.service.TextFragmentService;
 
 import javax.xml.bind.JAXBException;
 import java.io.File;
@@ -26,8 +22,6 @@ import java.util.List;
  */
 public class TestSaver {
     public static void main(String[] args) throws Docx4JException, JAXBException {
-        ApplicationContext context = new AnnotationConfigApplicationContext("ru.kir.diplom.backend");
-        TextFragmentService service = context.getBean("textService", TextFragmentService.class);
         WordprocessingMLPackage docxPackage = WordprocessingMLPackage.createPackage();
         MainDocumentPart document = docxPackage.getMainDocumentPart();
 
@@ -36,7 +30,6 @@ public class TestSaver {
         addPageBreak(docxPackage);
 
         fragmentNames.forEach(fragmentName -> {
-            ClientTextFragment fragment = service.getClientTextFragmentById(fragmentName);
             ObjectFactory objectFactory = Context.getWmlObjectFactory();
             TextProperties textProperties = new TextProperties();
             textProperties.setBold(false);
@@ -55,7 +48,7 @@ public class TestSaver {
             textProperties1.setJustification("both");
 
             document.addObject(createPar(objectFactory, fragmentName, textProperties));
-            document.addObject(createPar(objectFactory, fragment.getText(), textProperties1));
+            document.addObject(createPar(objectFactory, "sdjkfhjskdfjsdjghfjhsgdjhgsjksdhfchjsgfhjgsd", textProperties1));
         });
 
         document.addObject(NumberingRestart.createNumberedParagraph(2, 0, "one"));

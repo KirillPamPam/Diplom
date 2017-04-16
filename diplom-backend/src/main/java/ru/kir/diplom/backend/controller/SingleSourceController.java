@@ -41,6 +41,16 @@ public class SingleSourceController {
         return textFragment;
     }
 
+    @RequestMapping(value = "get/fragment/name/{name}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody ClientTextFragment getTextFragmentByName(@PathVariable(Constants.NAME) String name) {
+        ClientTextFragment textFragment = fragmentService.getTextFragmentByName(name);
+
+        if(textFragment == null)
+            throw new NullRequestException(Constants.WRONG_NAME, name, TextFragment.class, Constants.NAME);
+
+        return textFragment;
+    }
+
     @RequestMapping(value = "get/fragment/pattern/{pattern}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody List<ClientTextFragment> getTextFragmentsByPattern(@PathVariable("pattern") String pattern) {
         return fragmentService.getTextFragmentsByPattern(pattern);

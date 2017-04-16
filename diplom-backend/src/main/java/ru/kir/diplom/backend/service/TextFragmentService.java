@@ -16,6 +16,8 @@ public interface TextFragmentService {
 
     ClientTextFragment getClientTextFragmentById(String id);
 
+    ClientTextFragment getTextFragmentByName(String name);
+
     TextFragment getTextFragmentById(String id);
 
     List<ClientTextFragment> getAll();

@@ -45,6 +45,15 @@ public class TextFragmentServiceImpl implements TextFragmentService {
     }
 
     @Override
+    public ClientTextFragment getTextFragmentByName(String name) {
+        TextFragment textFragment = textFragmentDao.getTextFragmentByName(name);
+        if (textFragment == null) {
+            return null;
+        }
+        return mapper.map(textFragment, ClientTextFragment.class);
+    }
+
+    @Override
     public TextFragment getTextFragmentById(String id) {
         return textFragmentDao.getTextFragmentById(id);
     }
