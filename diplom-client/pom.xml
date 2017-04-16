@@ -24,6 +24,11 @@
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-json</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.docx4j</groupId>
+            <artifactId>docx4j</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
