@@ -4,6 +4,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Kirill Zhitelev on 09.04.2017.
@@ -25,5 +27,12 @@ public class Helper {
         Optional<ButtonType> res = alert.showAndWait();
 
         return res.get() == Constants.OK_BUTTON;
+    }
+
+    public static boolean checkFragmentName(String name) {
+        Pattern pattern = Pattern.compile("^[a-zA-Zа-яА-Я]");
+        Matcher matcher = pattern.matcher(name);
+
+        return matcher.find();
     }
 }

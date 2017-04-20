@@ -16,7 +16,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <docx4j-version>3.3.0</docx4j-version>
+        <docx4j-version>3.3.3</docx4j-version>
 
         <postgres-version>9.4.1207.jre7</postgres-version>
 

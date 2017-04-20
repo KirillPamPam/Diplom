@@ -1,5 +1,6 @@
 package ru.kir.diplom.client.ui.pages;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
@@ -7,10 +8,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -18,12 +16,16 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
+import org.docx4j.wml.Numbering;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.STBrType;
 import ru.kir.diplom.client.model.TextFragment;
@@ -33,10 +35,13 @@ import ru.kir.diplom.client.util.Helper;
 import ru.kir.diplom.client.util.WordConstants;
 import ru.kir.diplom.client.word.WordHelper;
 
+import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +58,8 @@ public class DocumentBuildPage {
     private ObservableList<String> selected = FXCollections.observableArrayList();
     private ObservableList<String> preSelect = FXCollections.observableArrayList();
     private RestClientService clientService = RestClientService.getInstance();
+    private NumberingDefinitionsPart ndp;
+    private ProgressBar progressBar = new ProgressBar();
 
     public DocumentBuildPage(Stage stage, FragmentPage fragmentPage) {
         this.stage = stage;
@@ -65,8 +72,9 @@ public class DocumentBuildPage {
     }
 
     private void init() {
+        progressBar.setVisible(false);
+
         GridPane gridPane = new GridPane();
-        //gridPane.setGridLinesVisible(true);
         gridPane.setPadding(new Insets(10));
         gridPane.setHgap(10);
         gridPane.setVgap(10);
@@ -84,7 +92,7 @@ public class DocumentBuildPage {
         Label chosen = new Label("Выбранные фрагменты");
 
         VBox rightBut = new VBox(10);
-        rightBut.getChildren().addAll(create, back);
+        rightBut.getChildren().addAll(create, back, progressBar);
         rightBut.setAlignment(Pos.CENTER_LEFT);
 
         GridPane.setHalignment(all, HPos.CENTER);
@@ -171,59 +179,119 @@ public class DocumentBuildPage {
                 Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите хотя бы один фрагмент", null, null);
                 return;
             }
-            ExecutorService executorService = Executors.newSingleThreadExecutor();
-            executorService.submit(this::createDoc);
+            String path = getDocPath();
 
-            executorService.shutdown();
+            if (path != null) {
+                ExecutorService executorService = Executors.newFixedThreadPool(2);
+                Future future = executorService.submit(() -> createDoc(path));
+
+                progressBar.setVisible(true);
+
+                executorService.submit(() -> handleResult(future, vBox));
+
+                executorService.shutdown();
+            }
         });
+    }
+
+    private void handleResult(Future future, VBox vBox) {
+        try {
+            Boolean result = (Boolean) future.get();
+            if (result)
+                Platform.runLater(() -> {
+                    progressBar.setVisible(false);
+                    Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Документ создан", null, null);
+                });
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
     private WordprocessingMLPackage getPackage() {
         WordprocessingMLPackage docxPackage = null;
         try {
             docxPackage = WordprocessingMLPackage.createPackage();
-        } catch (InvalidFormatException e) {
+            ndp = new NumberingDefinitionsPart();
+            docxPackage.getMainDocumentPart().addTargetPart(ndp);
+            ndp.setJaxbElement((Numbering) XmlUtils.unmarshalString(WordConstants.initialNumbering));
+        } catch (InvalidFormatException | JAXBException e) {
             e.printStackTrace();
         }
         return docxPackage;
     }
 
-    private void createDoc() {
+    private boolean createDoc(String path) {
         WordprocessingMLPackage wordprocessingMLPackage = getPackage();
         MainDocumentPart documentPart = wordprocessingMLPackage.getMainDocumentPart();
         ObjectFactory objectFactory = Context.getWmlObjectFactory();
         WordHelper.setPageMargins(wordprocessingMLPackage, objectFactory);
-        final WordprocessingMLPackage finalDocxPackage = wordprocessingMLPackage;
 
-        WordHelper.addBreak(wordprocessingMLPackage, STBrType.PAGE);
+        for(int i = 1; i < 10; i++){
+            documentPart.getPropertyResolver().activateStyle(String.format("TOC%s", i));
+        }
+
+        WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
+
+        long numId = 1;
 
         for (int i = 0; i < selected.size(); i++) {
+            int sectionIndex = i + 1;
+
             TextFragment textFragment = clientService.getTextFragmentByName(selected.get(i));
 
-            String name = textFragment.getFragmentName();
+            String name = sectionIndex + ". " + textFragment.getFragmentName();
 
             List<String> paragraphs = WordHelper.getWordParagraphs(textFragment.getText());
 
             documentPart.addObject(WordHelper.createPar(objectFactory, name, sectionProp()));
-            paragraphs.forEach(par -> {
-                if (par.matches("[1-9]\\.[1-9].*")) {
-                    WordHelper.addBreak(finalDocxPackage, STBrType.TEXT_WRAPPING);
-                    documentPart.addObject(WordHelper.createPar(objectFactory, par, parNameProp()));
-                    WordHelper.addBreak(finalDocxPackage, STBrType.TEXT_WRAPPING);
-                } else {
-                    documentPart.addObject(WordHelper.createPar(objectFactory, par, parTextProp()));
+            for (int j = 0; j < paragraphs.size(); j++) {
+                if (paragraphs.get(j).matches("[1-9]\\.[1-9].*")) {
+                    WordHelper.addBreak(objectFactory, documentPart, STBrType.TEXT_WRAPPING);
+
+                    if (paragraphs.get(j).matches("[1-9]\\.[1-9]\\.[1-9].*"))
+                        documentPart.addObject(WordHelper
+                                .createPar(objectFactory, paragraphs.get(j).replaceFirst("[1-9]", String.valueOf(sectionIndex)), parNameProp(WordConstants.HEADING3)));
+                    else
+                        documentPart.addObject(WordHelper
+                                .createPar(objectFactory, paragraphs.get(j).replaceFirst("[1-9]", String.valueOf(sectionIndex)), parNameProp(WordConstants.HEADING2)));
+
+                    if (!paragraphs.get(j + 1).matches("[1-9].*"))
+                        WordHelper.addBreak(objectFactory, documentPart, STBrType.TEXT_WRAPPING);
+                } else if (paragraphs.get(j).matches("-.*")) {
+                    documentPart.addObject(WordHelper
+                            .createNumberedParagraph(numId, 0, paragraphs.get(j).replaceFirst("-", ""), objectFactory, parTextProp()));
+                    if (j == paragraphs.size()-1 || !paragraphs.get(j+1).startsWith("-")) {
+                        numId = ndp.restart(1, 0, 1);
+                    }
                 }
-            });
+                else {
+                    documentPart.addObject(WordHelper.createPar(objectFactory, paragraphs.get(j), parTextProp()));
+                }
+            }
             if (i != selected.size()-1)
-                WordHelper.addBreak(finalDocxPackage, STBrType.PAGE);
+                WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
         }
         try {
             WordHelper.generateToc(wordprocessingMLPackage);
-            wordprocessingMLPackage.save(new File("document.docx"));
+            wordprocessingMLPackage.save(new File(path + ".docx"));
             System.out.println("Done");
         } catch (Docx4JException e) {
             e.printStackTrace();
+            return false;
         }
+
+        return true;
+    }
+
+    private String getDocPath() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Сохранить документ");
+        File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null)
+            return file.toString();
+
+        return null;
     }
 
     private TextProperties sectionProp() {
@@ -239,15 +307,15 @@ public class DocumentBuildPage {
         return textProperties;
     }
 
-    private TextProperties parNameProp() {
+    private TextProperties parNameProp(String heading) {
         TextProperties textProperties = new TextProperties();
-        textProperties.setBold(false);
+        textProperties.setBold(true);
         textProperties.setItalic(false);
         textProperties.setFontFamily(WordConstants.TIMES_NEW_ROMAN);
         textProperties.setSize("28");
         textProperties.setJustification(WordConstants.JC_BOTH);
         textProperties.setIndent("0");
-        textProperties.setStyle(WordConstants.HEADING2);
+        textProperties.setStyle(heading);
 
         return textProperties;
     }

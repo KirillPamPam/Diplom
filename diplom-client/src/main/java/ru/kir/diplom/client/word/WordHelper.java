@@ -1,6 +1,5 @@
 package ru.kir.diplom.client.word;
 
-import org.docx4j.jaxb.Context;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -38,19 +37,19 @@ public class WordHelper {
     public static void generateToc(WordprocessingMLPackage docxPackage) throws TocException {
         Toc.setTocHeadingText("Содержание");
         TocGenerator generator = new TocGenerator(docxPackage);
-        generator.generateToc(0, "TOC \\o \"1-3\" \\h \\z \\u ", false);
+        generator.generateToc(0, " TOC \\o \"1-3\" \\h \\z \\u ", false);
     }
 
-    public static void addBreak(WordprocessingMLPackage docxPackage, STBrType type) {
-        ObjectFactory factory = Context.getWmlObjectFactory();
-        MainDocumentPart documentPart = docxPackage.getMainDocumentPart();
-
-        Br breakObj = new Br();
-        breakObj.setType(type);
-
-        P paragraph = factory.createP();
-        paragraph.getContent().add(breakObj);
-        documentPart.getJaxbElement().getBody().getContent().add(paragraph);
+    public static void addBreak(ObjectFactory objectFactory, MainDocumentPart documentPart, STBrType type) {
+        P p = objectFactory.createP();
+        // Create object for r
+        R r = objectFactory.createR();
+        p.getContent().add(r);
+        // Create object for br
+        Br br = objectFactory.createBr();
+        r.getContent().add(br);
+        br.setType(type);
+        documentPart.addObject(p);
     }
 
     public static P createPar(ObjectFactory objectFactory, String text, TextProperties properties) {
@@ -129,24 +128,40 @@ public class WordHelper {
         }
     }
 
-    public static P createNumberedParagraph(long numId, long ilvl, String paragraphText, ObjectFactory factory ) {
+    public static P createNumberedParagraph(long numId, long ilvl, String paragraphText, ObjectFactory factory, TextProperties textProperties) {
 
         P  p = factory.createP();
 
         org.docx4j.wml.Text  t = factory.createText();
         t.setValue(paragraphText);
 
+        RPr prop = factory.createRPr();
+
         org.docx4j.wml.R  run = factory.createR();
+        run.setRPr(prop);
         run.getContent().add(t);
 
         p.getContent().add(run);
 
         org.docx4j.wml.PPr ppr = factory.createPPr();
-        p.setPPr( ppr );
+        p.setPPr(ppr);
 
         // Create and add <w:numPr>
         PPrBase.NumPr numPr =  factory.createPPrBaseNumPr();
         ppr.setNumPr(numPr);
+
+        PPrBase.Spacing spacing = factory.createPPrBaseSpacing();
+        spacing.setAfter(BigInteger.valueOf(0));
+        ppr.setSpacing(spacing);
+
+        HpsMeasure size = factory.createHpsMeasure();
+        size.setVal(new BigInteger(textProperties.getSize()));
+        prop.setSz(size);
+
+        RFonts font = factory.createRFonts();
+        font.setHAnsi(textProperties.getFontFamily());
+        font.setAscii(textProperties.getFontFamily());
+        prop.setRFonts(font);
 
         // The <w:ilvl> element
         PPrBase.NumPr.Ilvl ilvlElement = factory.createPPrBaseNumPrIlvl();

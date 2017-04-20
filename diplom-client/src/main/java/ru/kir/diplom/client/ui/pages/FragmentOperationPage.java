@@ -105,6 +105,11 @@ public class FragmentOperationPage {
             String name = nameField.getText();
             String text = textArea.getText();
 
+            if (!Helper.checkFragmentName(name)) {
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Название фрагмента должно начинаться с буквы", null, null);
+                return;
+            }
+
             if (name.equals("") || text.equals("")) {
                 Helper.makeInformationWindow(Alert.AlertType.ERROR, "Заполните все поля", null, null);
                 return;
@@ -121,6 +126,11 @@ public class FragmentOperationPage {
         update.setOnAction(event -> {
             String name = nameField.getText();
             String text = textArea.getText();
+
+            if (!Helper.checkFragmentName(name)) {
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Название фрагмента должно начинаться с буквы", null, null);
+                return;
+            }
 
             TextFragment textFragment = fragmentPage.getFragments().get(fragmentPage.getFragmentView().getSelectionModel().getSelectedIndex());
             textFragment.setText(text);
