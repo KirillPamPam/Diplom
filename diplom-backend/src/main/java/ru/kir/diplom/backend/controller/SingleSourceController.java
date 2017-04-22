@@ -7,13 +7,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.kir.diplom.backend.model.SingleSource;
+import ru.kir.diplom.backend.model.Style;
 import ru.kir.diplom.backend.model.TextFragment;
 import ru.kir.diplom.backend.model.client.ClientSingleSource;
+import ru.kir.diplom.backend.model.client.ClientStyle;
 import ru.kir.diplom.backend.model.client.ClientTextFragment;
 import ru.kir.diplom.backend.model.exception.InvalidRequestException;
 import ru.kir.diplom.backend.model.exception.NullRequestException;
 import ru.kir.diplom.backend.model.rest.*;
 import ru.kir.diplom.backend.service.SingleSourceService;
+import ru.kir.diplom.backend.service.StyleService;
 import ru.kir.diplom.backend.service.TextFragmentService;
 import ru.kir.diplom.backend.util.Constants;
 
@@ -30,6 +33,73 @@ public class SingleSourceController {
     private TextFragmentService fragmentService;
     @Autowired
     private SingleSourceService sourceService;
+    @Autowired
+    private StyleService styleService;
+
+    @RequestMapping(value = "get/style/{id}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody ClientStyle getStyle(@PathVariable(Constants.ID) String id) {
+        ClientStyle clientStyle = styleService.getStyleById(id);
+
+        if (clientStyle == null)
+            throw new NullRequestException(Constants.WRONG_ID, id, Style.class, Constants.ID);
+
+        return clientStyle;
+    }
+
+    @RequestMapping(value = "get/style/name/{name}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody ClientStyle getStyleByName(@PathVariable(Constants.NAME) String name) {
+        ClientStyle clientStyle = styleService.getStyleByName(name);
+
+        if (clientStyle == null)
+            throw new NullRequestException(Constants.WRONG_NAME, name, Style.class, Constants.NAME);
+
+        return clientStyle;
+    }
+
+    @RequestMapping(value = "getall/style", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody List<ClientStyle> getStyleByName() {
+        return styleService.getAll();
+    }
+
+    @RequestMapping(value = "create/style", method = RequestMethod.POST,
+            produces = "application/json", consumes = "application/json")
+    public @ResponseBody ResponseEntity createStyle(@RequestBody RequestCreateStyle style, BindingResult result) {
+        if(result.hasErrors()) {
+            throw new InvalidRequestException(Constants.INVALID_REQUEST, result);
+        }
+        else {
+            styleService.createStyle(style);
+            return getOkResponse();
+        }
+    }
+
+    @RequestMapping(value = "delete/style", method = RequestMethod.POST,
+            produces = "application/json", consumes = "application/json")
+    public ResponseEntity deleteStyle(@RequestBody @Valid RequestDeleteStyle style, BindingResult result) {
+        if (result.hasErrors()) {
+            throw new InvalidRequestException(Constants.INVALID_REQUEST, result);
+        }
+        boolean isDeleted = styleService.deleteStyle(style.getId());
+        if (!isDeleted) {
+            throw new NullRequestException(Constants.WRONG_ID, style.getId(), TextFragment.class, Constants.ID);
+        }
+        return getOkResponse();
+    }
+
+    @RequestMapping(value = "update/style", method = RequestMethod.POST,
+            consumes = "application/json", produces = "application/json")
+    public ResponseEntity updateStyle(@RequestBody @Valid RequestUpdateStyle style,
+                                             BindingResult result) {
+        if (result.hasErrors()) {
+            throw new InvalidRequestException(Constants.INVALID_REQUEST, result);
+        }
+        boolean isUpdate = styleService.updateStyle(style.getId(), style);
+
+        if (!isUpdate) {
+            throw new NullRequestException(Constants.WRONG_ID, style.getId(), TextFragment.class, Constants.ID);
+        }
+        return getOkResponse();
+    }
 
     @RequestMapping(value = "get/fragment/{id}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody ClientTextFragment getTextFragment(@PathVariable(Constants.ID) String id) {
