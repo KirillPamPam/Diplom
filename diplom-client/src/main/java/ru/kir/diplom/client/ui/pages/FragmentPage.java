@@ -34,6 +34,7 @@ public class FragmentPage {
     private Button correctFragment = new Button("Изменить");
     private Button toMainPage = new Button("На главную");
     private Button toCreationDoc = new Button("Создать документ");
+    private Button toStyles = new Button("Стили");
     private List<TextFragment> fragments;
     private ObservableList<String> fragmentsCollection = FXCollections.observableArrayList();
     private MainPage mainPage;
@@ -77,10 +78,11 @@ public class FragmentPage {
         VBox rightButtons = new VBox(15);
         toMainPage.setPrefSize(80, 60);
         toCreationDoc.setPrefSize(80, 60);
+        toStyles.setPrefSize(80, 60);
         toCreationDoc.setWrapText(true);
         toCreationDoc.setTextAlignment(TextAlignment.CENTER);
         rightButtons.setAlignment(Pos.CENTER);
-        rightButtons.getChildren().addAll(toCreationDoc, toMainPage);
+        rightButtons.getChildren().addAll(toCreationDoc, toStyles, toMainPage);
 
         gridPane.add(fragmentLabel, 1, 0);
         gridPane.add(fragmentButtons, 0, 1);
@@ -95,6 +97,8 @@ public class FragmentPage {
 
     private void handleButtons(ListView<String> fragmentView) {
         toMainPage.setOnAction(event -> stage.setScene(mainPage.getScene()));
+
+        toStyles.setOnAction(event -> stage.setScene(new StylePage(stage).getScene()));
 
         addFragment.setOnAction(event -> toOperationPage(null, Constants.CREATE_OPERATION));
 

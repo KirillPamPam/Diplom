@@ -1,5 +1,7 @@
 package ru.kir.diplom.client.word;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -64,6 +66,7 @@ public class WordHelper {
         PPr pPr = objectFactory.createPPr();
 
         PPrBase.Spacing spacing = objectFactory.createPPrBaseSpacing();
+//        spacing.setLine(new BigInteger(properties.getLineInterval()));
         spacing.setAfter(BigInteger.valueOf(0));
         pPr.setSpacing(spacing);
 
@@ -175,5 +178,34 @@ public class WordHelper {
 
         return p;
 
+    }
+
+    public static  ObservableList<String> initSizes() {
+        ObservableList<String> sizes = FXCollections.observableArrayList();
+        sizes.addAll("8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26");
+
+        return sizes;
+    }
+
+    public static  ObservableList<String> initFonts() {
+        ObservableList<String> fonts = FXCollections.observableArrayList();
+        fonts.addAll("Times New Roman", "Arial", "Calibri", "Verdana");
+
+        return fonts;
+    }
+
+    public static  ObservableList<String> initIntervals() {
+        System.out.println("AAA");
+        ObservableList<String> intervals = FXCollections.observableArrayList();
+        intervals.addAll("1.0", "1.15", "1.5", "2.0", "2.5", "3.0");
+
+        return intervals;
+    }
+
+    public static  ObservableList<String> initJc() {
+        ObservableList<String> jc = FXCollections.observableArrayList();
+        jc.addAll("По центру", "По левому краю", " По праваму краю", "По ширине");
+
+        return jc;
     }
 }

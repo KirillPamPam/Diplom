@@ -21,6 +21,12 @@ public class Constants {
     public static final String CREATE_SINGLE_SOURCE = "/create/source/";
     public static final String UPDATE_SINGLE_SOURCE = "/update/source/";
     public static final String DELETE_SINGLE_SOURCE = "/delete/source/";
+    public static final String GET_STYLE = "/get/style/";
+    public static final String GET_STYLE_BY_NAME = "/get/style/name/";
+    public static final String GET_ALL_STYLE = "/getall/style/";
+    public static final String CREATE_STYLE = "/create/style/";
+    public static final String UPDATE_STYLE = "/update/style/";
+    public static final String DELETE_STYLE = "/delete/style/";
 
     public static final String CREATE_OPERATION = "create";
     public static final String UPDATE_OPERATION = "update";

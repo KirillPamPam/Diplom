@@ -7,6 +7,7 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
+import ru.kir.diplom.client.model.Style;
 import ru.kir.diplom.client.model.http.*;
 import ru.kir.diplom.client.model.SingleSource;
 import ru.kir.diplom.client.model.TextFragment;
@@ -38,6 +39,61 @@ public class RestClientService {
         clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
 
         client = Client.create(clientConfig);
+    }
+
+    public Style getStyle(String id) {
+        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.GET_STYLE + id);
+        ClientResponse response = webResource.get(ClientResponse.class);
+        if (response.getStatus() == Integer.parseInt(Constants.BAD_REQUEST))
+            throw new RuntimeException(response.getEntity(HttpResponseDescriptor.class).getMessage());
+
+        return response.getEntity(Style.class);
+    }
+
+    public Style getStyleByName(String name) {
+        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.GET_STYLE_BY_NAME + name);
+        ClientResponse response = webResource.get(ClientResponse.class);
+        if (response.getStatus() == Integer.parseInt(Constants.BAD_REQUEST))
+            throw new RuntimeException(response.getEntity(HttpResponseDescriptor.class).getMessage());
+
+        return response.getEntity(Style.class);
+    }
+
+    public List<Style> getAllStyles() {
+        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.GET_ALL_STYLE);
+        ClientResponse response = webResource.get(ClientResponse.class);
+
+        return response.getEntity(new GenericType<List<Style>>() {});
+    }
+
+    public HttpResponseDescriptor createStyle(String name, String properties) {
+        RequestCreateStyle style= new RequestCreateStyle(name, properties);
+        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.CREATE_STYLE);
+        ClientResponse response = webResource.type(Constants.APP_JSON).post(ClientResponse.class, style);
+        if (response.getStatus() == Integer.parseInt(Constants.BAD_REQUEST))
+            throw new RuntimeException(response.getEntity(HttpResponseDescriptor.class).getMessage());
+
+        return response.getEntity(HttpResponseDescriptor.class);
+    }
+
+    public HttpResponseDescriptor updateStyle(String id, String name, String properties) {
+        RequestUpdateStyle style= new RequestUpdateStyle(id, name, properties);
+        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.UPDATE_STYLE);
+        ClientResponse response = webResource.type(Constants.APP_JSON).post(ClientResponse.class, style);
+        if (response.getStatus() == Integer.parseInt(Constants.BAD_REQUEST))
+            throw new RuntimeException(response.getEntity(HttpResponseDescriptor.class).getMessage());
+
+        return response.getEntity(HttpResponseDescriptor.class);
+    }
+
+    public HttpResponseDescriptor deleteStyle(String id) {
+        RequestDeleteStyle style= new RequestDeleteStyle(id);
+        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.DELETE_STYLE);
+        ClientResponse response = webResource.type(Constants.APP_JSON).post(ClientResponse.class, style);
+        if (response.getStatus() == Integer.parseInt(Constants.BAD_REQUEST))
+            throw new RuntimeException(response.getEntity(HttpResponseDescriptor.class).getMessage());
+
+        return response.getEntity(HttpResponseDescriptor.class);
     }
 
     public TextFragment getTextFragment(String id) {

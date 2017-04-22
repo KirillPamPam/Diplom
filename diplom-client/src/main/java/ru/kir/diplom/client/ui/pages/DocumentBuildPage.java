@@ -15,6 +15,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -89,7 +90,9 @@ public class DocumentBuildPage {
         chosenFragments = new ListView<>(selected);
 
         Label all = new Label("Все фрагменты");
+        all.setFont(Font.font("Arial", 15));
         Label chosen = new Label("Выбранные фрагменты");
+        chosen.setFont(Font.font("Arial", 15));
 
         VBox rightBut = new VBox(10);
         rightBut.getChildren().addAll(create, back, progressBar);

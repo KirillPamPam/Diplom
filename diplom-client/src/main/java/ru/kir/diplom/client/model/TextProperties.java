@@ -11,8 +11,17 @@ public class TextProperties {
     private String style;
     private String justification;
     private String indent;
+    private String lineInterval;
 
     public TextProperties() {
+    }
+
+    public String getLineInterval() {
+        return lineInterval;
+    }
+
+    public void setLineInterval(String lineInterval) {
+        this.lineInterval = lineInterval;
     }
 
     public String getIndent() {
