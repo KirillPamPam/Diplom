@@ -14,6 +14,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -29,6 +30,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.STBrType;
+import ru.kir.diplom.client.model.Margins;
+import ru.kir.diplom.client.model.Style;
 import ru.kir.diplom.client.model.TextFragment;
 import ru.kir.diplom.client.model.TextProperties;
 import ru.kir.diplom.client.service.http.RestClientService;
@@ -38,7 +41,7 @@ import ru.kir.diplom.client.word.WordHelper;
 
 import javax.xml.bind.JAXBException;
 import java.io.File;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,6 +64,8 @@ public class DocumentBuildPage {
     private RestClientService clientService = RestClientService.getInstance();
     private NumberingDefinitionsPart ndp;
     private ProgressBar progressBar = new ProgressBar();
+    private Map<String, String> properties;
+    private ComboBox<String> styles;
 
     public DocumentBuildPage(Stage stage, FragmentPage fragmentPage) {
         this.stage = stage;
@@ -81,21 +86,30 @@ public class DocumentBuildPage {
         gridPane.setVgap(10);
 
         ColumnConstraints col1 = new ColumnConstraints(325, 300, Double.MAX_VALUE);
-        ColumnConstraints col2 = new ColumnConstraints(50, 300, Double.MAX_VALUE);
+        ColumnConstraints col2 = new ColumnConstraints(25, 300, Double.MAX_VALUE);
         ColumnConstraints col3 = new ColumnConstraints(325, 300, Double.MAX_VALUE);
-        ColumnConstraints col4 = new ColumnConstraints(200, 300, Double.MAX_VALUE);
+        ColumnConstraints col4 = new ColumnConstraints(225, 300, Double.MAX_VALUE);
         gridPane.getColumnConstraints().addAll(col1, col2, col3, col4);
+
+        styles = new ComboBox<>(FXCollections.observableArrayList(clientService.getAllStyles()
+                .stream()
+                .map(Style::getName)
+                .collect(Collectors.toList())));
 
         allFragments = new ListView<>(preSelect);
         chosenFragments = new ListView<>(selected);
 
         Label all = new Label("Все фрагменты");
+        Label style = new Label("Стиль");
         all.setFont(Font.font("Arial", 15));
         Label chosen = new Label("Выбранные фрагменты");
         chosen.setFont(Font.font("Arial", 15));
 
+        HBox styleB = new HBox(10);
+        styleB.getChildren().addAll(style, styles);
+
         VBox rightBut = new VBox(10);
-        rightBut.getChildren().addAll(create, back, progressBar);
+        rightBut.getChildren().addAll(styleB, create, back, progressBar);
         rightBut.setAlignment(Pos.CENTER_LEFT);
 
         GridPane.setHalignment(all, HPos.CENTER);
@@ -182,6 +196,7 @@ public class DocumentBuildPage {
                 Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите хотя бы один фрагмент", null, null);
                 return;
             }
+            properties = getProp();
             String path = getDocPath();
 
             if (path != null) {
@@ -227,7 +242,7 @@ public class DocumentBuildPage {
         WordprocessingMLPackage wordprocessingMLPackage = getPackage();
         MainDocumentPart documentPart = wordprocessingMLPackage.getMainDocumentPart();
         ObjectFactory objectFactory = Context.getWmlObjectFactory();
-        WordHelper.setPageMargins(wordprocessingMLPackage, objectFactory);
+        WordHelper.setPageMargins(wordprocessingMLPackage, objectFactory, getMargins());
 
         for(int i = 1; i < 10; i++){
             documentPart.getPropertyResolver().activateStyle(String.format("TOC%s", i));
@@ -297,28 +312,74 @@ public class DocumentBuildPage {
         return null;
     }
 
+    private Map<String, String> getProp() {
+        Map<String, String> properties = new HashMap<>();
+
+        Style style = clientService.getStyleByName(styles.getValue());
+        List<String> prop = new ArrayList<>(Arrays.asList(style.getProperties().split(";")));
+
+        prop.forEach(property -> {
+            String[] wordProperties = property.split(":");
+            String key = wordProperties[0];
+            String value = wordProperties[1];
+
+            switch (key) {
+                case WordConstants.TEXT_SIZE:
+                case WordConstants.SECTION_SIZE:
+                case WordConstants.OTHER_SIZE:
+                    properties.put(key, Helper.textSizeConvert(value));
+                    break;
+                case WordConstants.SECTION_JC:
+                case WordConstants.TEXT_JC:
+                    properties.put(key, Helper.jcConvert(value));
+                    break;
+                case WordConstants.INTERVAL:
+                    properties.put(key, Helper.lineIntervalConvert(value));
+                    break;
+                case WordConstants.MARGIN_BOT:
+                case WordConstants.MARGIN_TOP:
+                case WordConstants.MARGIN_RIGHT:
+                case WordConstants.MARGIN_LEFT:
+                    properties.put(key, Helper.marginsConvert(value));
+                    break;
+                default:
+                    properties.put(key, value);
+                    break;
+            }
+        });
+
+        return properties;
+    }
+
+    private Margins getMargins() {
+        return new Margins(properties.get(WordConstants.MARGIN_LEFT), properties.get(WordConstants.MARGIN_RIGHT),
+                properties.get(WordConstants.MARGIN_BOT), properties.get(WordConstants.MARGIN_TOP));
+    }
+
     private TextProperties sectionProp() {
         TextProperties textProperties = new TextProperties();
-        textProperties.setBold(true);
-        textProperties.setItalic(false);
-        textProperties.setFontFamily(WordConstants.TIMES_NEW_ROMAN);
-        textProperties.setSize("28");
+        textProperties.setBold(Boolean.valueOf(properties.get(WordConstants.SECTION_BOLD)));
+        textProperties.setItalic(Boolean.valueOf(properties.get(WordConstants.SECTION_ITALIC)));
+        textProperties.setFontFamily(properties.get(WordConstants.TEXT_FONT));
+        textProperties.setSize(properties.get(WordConstants.TEXT_SIZE));
         textProperties.setStyle(WordConstants.HEADING1);
         textProperties.setIndent("0");
-        textProperties.setJustification(WordConstants.JC_CENTER);
+        textProperties.setJustification(properties.get(WordConstants.SECTION_JC));
+        textProperties.setLineInterval(properties.get(WordConstants.INTERVAL));
 
         return textProperties;
     }
 
     private TextProperties parNameProp(String heading) {
         TextProperties textProperties = new TextProperties();
-        textProperties.setBold(true);
-        textProperties.setItalic(false);
-        textProperties.setFontFamily(WordConstants.TIMES_NEW_ROMAN);
-        textProperties.setSize("28");
+        textProperties.setBold(Boolean.valueOf(properties.get(WordConstants.OTHER_BOLD)));
+        textProperties.setItalic(Boolean.valueOf(properties.get(WordConstants.OTHER_ITALIC)));
+        textProperties.setFontFamily(properties.get(WordConstants.TEXT_FONT));
+        textProperties.setSize(properties.get(WordConstants.OTHER_SIZE));
         textProperties.setJustification(WordConstants.JC_BOTH);
         textProperties.setIndent("0");
         textProperties.setStyle(heading);
+        textProperties.setLineInterval(properties.get(WordConstants.INTERVAL));
 
         return textProperties;
     }
@@ -327,11 +388,12 @@ public class DocumentBuildPage {
         TextProperties textProperties = new TextProperties();
         textProperties.setBold(false);
         textProperties.setItalic(false);
-        textProperties.setFontFamily(WordConstants.TIMES_NEW_ROMAN);
-        textProperties.setSize("28");
+        textProperties.setFontFamily(properties.get(WordConstants.TEXT_FONT));
+        textProperties.setSize(properties.get(WordConstants.TEXT_SIZE));
         textProperties.setJustification(WordConstants.JC_BOTH);
         textProperties.setIndent("225");
         textProperties.setStyle("");
+        textProperties.setLineInterval(properties.get(WordConstants.INTERVAL));
 
         return textProperties;
     }

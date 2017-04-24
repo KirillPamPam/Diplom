@@ -35,4 +35,35 @@ public class Helper {
 
         return matcher.find();
     }
+
+    public static String jcConvert(String value) {
+        String jc = null;
+        switch (value) {
+            case WordConstants.CENTER:
+                jc = WordConstants.JC_CENTER;
+                break;
+            case WordConstants.LEFT:
+                jc = WordConstants.JC_LEFT;
+                break;
+            case WordConstants.RIGHT:
+                jc = WordConstants.JC_RIGHT;
+                break;
+            case WordConstants.BOTH:
+                jc = WordConstants.JC_BOTH;
+                break;
+        }
+        return jc;
+    }
+
+    public static String marginsConvert(String value) {
+        return String.valueOf((int)(Double.parseDouble(value) * 568));
+    }
+
+    public static String textSizeConvert(String value) {
+        return String.valueOf(Integer.parseInt(value) * 2);
+    }
+
+    public static String lineIntervalConvert(String value) {
+        return String.valueOf((int)(Double.parseDouble(value) * 240));
+    }
 }

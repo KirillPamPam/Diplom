@@ -98,7 +98,7 @@ public class FragmentPage {
     private void handleButtons(ListView<String> fragmentView) {
         toMainPage.setOnAction(event -> stage.setScene(mainPage.getScene()));
 
-        toStyles.setOnAction(event -> stage.setScene(new StylePage(stage).getScene()));
+        toStyles.setOnAction(event -> stage.setScene(new StylePage(stage, this).getScene()));
 
         addFragment.setOnAction(event -> toOperationPage(null, Constants.CREATE_OPERATION));
 

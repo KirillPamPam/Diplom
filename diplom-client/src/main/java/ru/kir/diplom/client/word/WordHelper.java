@@ -10,7 +10,9 @@ import org.docx4j.toc.Toc;
 import org.docx4j.toc.TocException;
 import org.docx4j.toc.TocGenerator;
 import org.docx4j.wml.*;
+import ru.kir.diplom.client.model.Margins;
 import ru.kir.diplom.client.model.TextProperties;
+import ru.kir.diplom.client.util.WordConstants;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -66,7 +68,7 @@ public class WordHelper {
         PPr pPr = objectFactory.createPPr();
 
         PPrBase.Spacing spacing = objectFactory.createPPrBaseSpacing();
-//        spacing.setLine(new BigInteger(properties.getLineInterval()));
+        spacing.setLine(new BigInteger(properties.getLineInterval()));
         spacing.setAfter(BigInteger.valueOf(0));
         pPr.setSpacing(spacing);
 
@@ -114,15 +116,19 @@ public class WordHelper {
         return paragraph;
     }
 
-    public static void setPageMargins(WordprocessingMLPackage wordMLPackage, ObjectFactory factory) {
+    public static void setPageMargins(WordprocessingMLPackage wordMLPackage, ObjectFactory factory, Margins margins) {
         try {
             Body body = wordMLPackage.getMainDocumentPart().getContents().getBody();
             PageDimensions page = new PageDimensions();
             SectPr.PgMar pgMar = page.getPgMar();
-            pgMar.setBottom(BigInteger.valueOf(852));
+            pgMar.setBottom(new BigInteger(margins.getBot()));
+            pgMar.setTop(new BigInteger(margins.getTop()));
+            pgMar.setLeft(new BigInteger(margins.getLeft()));
+            pgMar.setRight(new BigInteger(margins.getRight()));
+/*            pgMar.setBottom(BigInteger.valueOf(852));
             pgMar.setTop(BigInteger.valueOf(1420));
             pgMar.setLeft(BigInteger.valueOf(1136));
-            pgMar.setRight(BigInteger.valueOf(568));
+            pgMar.setRight(BigInteger.valueOf(568));*/
             SectPr sectPr = factory.createSectPr();
             body.setSectPr(sectPr);
             sectPr.setPgMar(pgMar);
@@ -204,7 +210,7 @@ public class WordHelper {
 
     public static  ObservableList<String> initJc() {
         ObservableList<String> jc = FXCollections.observableArrayList();
-        jc.addAll("По центру", "По левому краю", " По праваму краю", "По ширине");
+        jc.addAll(WordConstants.CENTER, WordConstants.LEFT, WordConstants.RIGHT, WordConstants.BOTH);
 
         return jc;
     }

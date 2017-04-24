@@ -27,15 +27,18 @@ public class StylePage {
     private Stage stage;
     private Scene scene;
     private RestClientService clientService = RestClientService.getInstance();
-    private ListView<String> stylesViev;
+    private ListView<String> stylesView;
     private ObservableList<String> stylesCollection = FXCollections.observableArrayList();
     private List<Style> styles;
     private Button addStyle = new Button("Создать");
     private Button removeStyle = new Button("Удалить");
     private Button correctStyle = new Button("Изменить");
+    private Button back = new Button("Назад");
+    private FragmentPage fragmentPage;
 
-    public StylePage(Stage stage) {
+    public StylePage(Stage stage, FragmentPage fragmentPage) {
         this.stage = stage;
+        this.fragmentPage = fragmentPage;
 
         styles = clientService.getAllStyles();
 
@@ -55,7 +58,7 @@ public class StylePage {
         gridPane.getColumnConstraints().addAll(col1, col2, col3);
 
         stylesCollection.addAll(styles.stream().map(Style::getName).collect(Collectors.toList()));
-        stylesViev = new ListView<>(stylesCollection);
+        stylesView = new ListView<>(stylesCollection);
 
         Label styleLabel = new Label("Стили");
         styleLabel.setFont(Font.font("Arial", 15));
@@ -63,11 +66,11 @@ public class StylePage {
 
         VBox styleButtons = new VBox(15);
         styleButtons.setAlignment(Pos.CENTER_RIGHT);
-        styleButtons.getChildren().addAll(addStyle, correctStyle, removeStyle);
+        styleButtons.getChildren().addAll(addStyle, correctStyle, removeStyle, back);
 
         gridPane.add(styleButtons, 0, 1);
         gridPane.add(styleLabel, 1, 0);
-        gridPane.add(stylesViev, 1, 1);
+        gridPane.add(stylesView, 1, 1);
 
         handleBut();
 
@@ -75,9 +78,17 @@ public class StylePage {
     }
 
     private void handleBut() {
-        addStyle.setOnAction(event ->  {
-            stage.setScene(new StyleOperationPage(stage).getScene());
-        });
+        addStyle.setOnAction(event -> stage.setScene(new StyleOperationPage(stage, this).getScene()));
+
+        back.setOnAction(event -> stage.setScene(fragmentPage.getScene()));
+    }
+
+    public ObservableList<String> getStylesCollection() {
+        return stylesCollection;
+    }
+
+    public List<Style> getStyles() {
+        return styles;
     }
 
     public Scene getScene() {
