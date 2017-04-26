@@ -35,6 +35,7 @@ import ru.kir.diplom.client.model.Style;
 import ru.kir.diplom.client.model.TextFragment;
 import ru.kir.diplom.client.model.TextProperties;
 import ru.kir.diplom.client.service.http.RestClientService;
+import ru.kir.diplom.client.util.Constants;
 import ru.kir.diplom.client.util.Helper;
 import ru.kir.diplom.client.util.WordConstants;
 import ru.kir.diplom.client.word.WordHelper;
@@ -73,6 +74,7 @@ public class DocumentBuildPage {
 
         preSelect.addAll(clientService.getAllTextFragments(fragmentPage.getSingleSourceName())
                 .stream().map(TextFragment::getFragmentName).collect(Collectors.toList()));
+        preSelect.remove("АННОТАЦИЯ");
 
         init();
     }
@@ -196,6 +198,12 @@ public class DocumentBuildPage {
                 Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите хотя бы один фрагмент", null, null);
                 return;
             }
+
+            if (styles.getValue().equals("")) {
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите стиль", null, null);
+                return;
+            }
+
             properties = getProp();
             String path = getDocPath();
 
@@ -244,10 +252,26 @@ public class DocumentBuildPage {
         ObjectFactory objectFactory = Context.getWmlObjectFactory();
         WordHelper.setPageMargins(wordprocessingMLPackage, objectFactory, getMargins());
 
+        WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
+
         for(int i = 1; i < 10; i++){
             documentPart.getPropertyResolver().activateStyle(String.format("TOC%s", i));
         }
 
+        try {
+            WordHelper.addPage(objectFactory, wordprocessingMLPackage, documentPart);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        TextFragment annotation = clientService.getTextFragmentByName("АННОТАЦИЯ");
+        documentPart.addObject(WordHelper.createPar(objectFactory, annotation.getFragmentName(), sectionProp()));
+        WordHelper.addBreak(objectFactory, documentPart, STBrType.TEXT_WRAPPING);
+        List<String> annotationPar = WordHelper.getWordParagraphs(annotation.getText());
+        annotationPar.forEach(par -> documentPart.addObject(WordHelper.createPar(objectFactory, par, parTextProp("225"))));
+        int index = annotationPar.size() + 4;
+
+        WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
         WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
 
         long numId = 1;
@@ -263,34 +287,48 @@ public class DocumentBuildPage {
 
             documentPart.addObject(WordHelper.createPar(objectFactory, name, sectionProp()));
             for (int j = 0; j < paragraphs.size(); j++) {
+                boolean hasTitle = true;
                 if (paragraphs.get(j).matches("[1-9]\\.[1-9].*")) {
                     WordHelper.addBreak(objectFactory, documentPart, STBrType.TEXT_WRAPPING);
 
-                    if (paragraphs.get(j).matches("[1-9]\\.[1-9]\\.[1-9].*"))
-                        documentPart.addObject(WordHelper
-                                .createPar(objectFactory, paragraphs.get(j).replaceFirst("[1-9]", String.valueOf(sectionIndex)), parNameProp(WordConstants.HEADING3)));
+                    if (paragraphs.get(j).matches("[1-9]\\.[1-9]\\.[1-9].*")) {
+                        if (paragraphs.get(j).contains(Constants.NO_TITLE)) {
+                            hasTitle = false;
+                            String textWithNoTitle = paragraphs.get(j).replace(Constants.NO_TITLE, paragraphs.get(j + 1));
+                            paragraphs.remove(j+1);
+                            documentPart.addObject(WordHelper.createPar(objectFactory, textWithNoTitle, parTextProp("0")));
+                        } else {
+                            if (paragraphs.get(j).matches("[1-9]\\.[1-9]\\.[1-9]\\.[1-9].*")) {
+                                documentPart.addObject(WordHelper
+                                        .createPar(objectFactory, paragraphs.get(j).replaceFirst("[1-9]", String.valueOf(sectionIndex)), parNameProp(WordConstants.HEADING4)));
+                            } else {
+                                documentPart.addObject(WordHelper
+                                        .createPar(objectFactory, paragraphs.get(j).replaceFirst("[1-9]", String.valueOf(sectionIndex)), parNameProp(WordConstants.HEADING3)));
+                            }
+                        }
+                    }
                     else
                         documentPart.addObject(WordHelper
                                 .createPar(objectFactory, paragraphs.get(j).replaceFirst("[1-9]", String.valueOf(sectionIndex)), parNameProp(WordConstants.HEADING2)));
 
-                    if (!paragraphs.get(j + 1).matches("[1-9].*"))
+                    if (!paragraphs.get(j + 1).matches("[1-9].*") && hasTitle)
                         WordHelper.addBreak(objectFactory, documentPart, STBrType.TEXT_WRAPPING);
                 } else if (paragraphs.get(j).matches("-.*")) {
                     documentPart.addObject(WordHelper
-                            .createNumberedParagraph(numId, 0, paragraphs.get(j).replaceFirst("-", ""), objectFactory, parTextProp()));
+                            .createNumberedParagraph(numId, 0, paragraphs.get(j).replaceFirst("-", ""), objectFactory, parTextProp("225")));
                     if (j == paragraphs.size()-1 || !paragraphs.get(j+1).startsWith("-")) {
                         numId = ndp.restart(1, 0, 1);
                     }
                 }
                 else {
-                    documentPart.addObject(WordHelper.createPar(objectFactory, paragraphs.get(j), parTextProp()));
+                    documentPart.addObject(WordHelper.createPar(objectFactory, paragraphs.get(j), parTextProp("225")));
                 }
             }
             if (i != selected.size()-1)
                 WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
         }
         try {
-            WordHelper.generateToc(wordprocessingMLPackage);
+            WordHelper.generateToc(wordprocessingMLPackage, index);
             wordprocessingMLPackage.save(new File(path + ".docx"));
             System.out.println("Done");
         } catch (Docx4JException e) {
@@ -384,14 +422,14 @@ public class DocumentBuildPage {
         return textProperties;
     }
 
-    private TextProperties parTextProp() {
+    private TextProperties parTextProp(String indent) {
         TextProperties textProperties = new TextProperties();
         textProperties.setBold(false);
         textProperties.setItalic(false);
         textProperties.setFontFamily(properties.get(WordConstants.TEXT_FONT));
         textProperties.setSize(properties.get(WordConstants.TEXT_SIZE));
         textProperties.setJustification(WordConstants.JC_BOTH);
-        textProperties.setIndent("225");
+        textProperties.setIndent(indent);
         textProperties.setStyle("");
         textProperties.setLineInterval(properties.get(WordConstants.INTERVAL));
 

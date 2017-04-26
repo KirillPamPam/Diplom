@@ -29,8 +29,9 @@ public class Constants {
     public static final String DELETE_STYLE = "/delete/style/";
 
     public static final String CREATE_OPERATION = "create";
-    public static final String UPDATE_OPERATION = "update";
     public static final String READ_OPERATION = "read";
+
+    public static final String NO_TITLE = "No title";
 
     public static final ButtonType OK_BUTTON = new ButtonType(
             "Да", ButtonBar.ButtonData.OK_DONE);

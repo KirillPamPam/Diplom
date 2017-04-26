@@ -74,10 +74,13 @@ public class FragmentOperationPage {
             nameField.setEditable(false);
             textArea.setEditable(false);
 
-            GridPane.setHalignment(cancel, HPos.CENTER);
-            gridPane.add(cancel, 1, 2);
+            HBox createBut = new HBox(15);
+            createBut.setAlignment(Pos.CENTER);
+            createBut.getChildren().addAll(update, cancel);
+
+            gridPane.add(createBut, 1, 2);
         }
-        else if (Objects.equals(operation, Constants.UPDATE_OPERATION)) {
+/*        else if (Objects.equals(operation, Constants.UPDATE_OPERATION)) {
             nameField.setText(textFragment.getFragmentName());
             textArea.setText(textFragment.getText());
 
@@ -86,7 +89,7 @@ public class FragmentOperationPage {
             createBut.getChildren().addAll(update, cancel);
 
             gridPane.add(createBut, 1, 2);
-        }
+        }*/
         else if (Objects.equals(operation, Constants.CREATE_OPERATION)) {
             HBox createBut = new HBox(15);
             createBut.setAlignment(Pos.CENTER);
@@ -111,7 +114,7 @@ public class FragmentOperationPage {
             }
 
             if (name.equals("") || text.equals("")) {
-                Helper.makeInformationWindow(Alert.AlertType.ERROR, "Заполните все поля", null, null);
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Заполните все поля", null, null);
                 return;
             }
 
@@ -124,22 +127,29 @@ public class FragmentOperationPage {
         cancel.setOnAction(event -> stage.setScene(fragmentPage.getScene()));
 
         update.setOnAction(event -> {
-            String name = nameField.getText();
-            String text = textArea.getText();
-
-            if (!Helper.checkFragmentName(name)) {
-                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Название фрагмента должно начинаться с буквы", null, null);
-                return;
+            if (update.getText().equals("Изменить")) {
+                update.setText("Сохранить");
+                nameField.setEditable(true);
+                textArea.setEditable(true);
             }
+            else if (update.getText().equals("Сохранить")) {
+                String name = nameField.getText();
+                String text = textArea.getText();
 
-            TextFragment textFragment = fragmentPage.getFragments().get(fragmentPage.getFragmentView().getSelectionModel().getSelectedIndex());
-            textFragment.setText(text);
-            textFragment.setFragmentName(name);
+                if (!Helper.checkFragmentName(name)) {
+                    Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Название фрагмента должно начинаться с буквы", null, null);
+                    return;
+                }
 
-            clientService.updateTextFragment(textFragment.getId(), text, name);
-            fragmentPage.getFragments().set(fragmentPage.getFragmentView().getSelectionModel().getSelectedIndex(), textFragment);
-            fragmentPage.getFragmentsCollection().set(fragmentPage.getFragmentView().getSelectionModel().getSelectedIndex(), name);
-            cancel.fire();
+                TextFragment textFragment = fragmentPage.getFragments().get(fragmentPage.getFragmentView().getSelectionModel().getSelectedIndex());
+                textFragment.setText(text);
+                textFragment.setFragmentName(name);
+
+                clientService.updateTextFragment(textFragment.getId(), text, name);
+                fragmentPage.getFragments().set(fragmentPage.getFragmentView().getSelectionModel().getSelectedIndex(), textFragment);
+                fragmentPage.getFragmentsCollection().set(fragmentPage.getFragmentView().getSelectionModel().getSelectedIndex(), name);
+                cancel.fire();
+            }
         });
     }
 

@@ -31,7 +31,6 @@ public class FragmentPage {
     private Stage stage;
     private Button addFragment = new Button("Создать");
     private Button removeFragment = new Button("Удалить");
-    private Button correctFragment = new Button("Изменить");
     private Button toMainPage = new Button("На главную");
     private Button toCreationDoc = new Button("Создать документ");
     private Button toStyles = new Button("Стили");
@@ -65,7 +64,7 @@ public class FragmentPage {
 
         VBox fragmentButtons = new VBox(15);
         fragmentButtons.setAlignment(Pos.CENTER_RIGHT);
-        fragmentButtons.getChildren().addAll(addFragment, correctFragment, removeFragment);
+        fragmentButtons.getChildren().addAll(addFragment, removeFragment);
 
         Label fragmentLabel = new Label("Фрагменты источника");
         fragmentLabel.setFont(Font.font("Arial", 15));
@@ -102,15 +101,6 @@ public class FragmentPage {
 
         addFragment.setOnAction(event -> toOperationPage(null, Constants.CREATE_OPERATION));
 
-        correctFragment.setOnAction(event -> {
-            if (fragmentView.getSelectionModel().getSelectedItem() == null || fragmentView.getSelectionModel().getSelectedItems().size() > 1) {
-                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите фрагмент", null, null);
-                return;
-            }
-
-            toOperationPage(fragmentView, Constants.UPDATE_OPERATION);
-        });
-
         removeFragment.setOnAction(event -> {
             if (fragmentView.getSelectionModel().getSelectedItem() == null) {
                 Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите фрагмент", null, null);
@@ -141,9 +131,12 @@ public class FragmentPage {
 
     private void toOperationPage(ListView<String> fragmentView, String operation) {
         if (fragmentView != null) {
-            TextFragment textFragment = fragments.get(fragmentView.getSelectionModel().getSelectedIndex());
-            FragmentOperationPage operationPage = new FragmentOperationPage(this, stage, textFragment, operation);
-            stage.setScene(operationPage.getScene());
+            int selectedIndex = fragmentView.getSelectionModel().getSelectedIndex();
+            if (selectedIndex != -1) {
+                TextFragment textFragment = fragments.get(selectedIndex);
+                FragmentOperationPage operationPage = new FragmentOperationPage(this, stage, textFragment, operation);
+                stage.setScene(operationPage.getScene());
+            }
         }
         else {
             FragmentOperationPage operationPage = new FragmentOperationPage(this, stage, null, operation);

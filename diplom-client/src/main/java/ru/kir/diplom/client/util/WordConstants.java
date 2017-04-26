@@ -24,6 +24,7 @@ public class WordConstants {
     public static final String HEADING1 = "Heading1";
     public static final String HEADING2 = "Heading2";
     public static final String HEADING3 = "Heading3";
+    public static final String HEADING4 = "Heading4";
 
     public static final String TEXT_SIZE = "textSize";
     public static final String TEXT_FONT = "textFont";

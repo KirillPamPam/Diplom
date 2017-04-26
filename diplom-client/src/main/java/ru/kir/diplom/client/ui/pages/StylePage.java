@@ -16,6 +16,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import ru.kir.diplom.client.model.Style;
 import ru.kir.diplom.client.service.http.RestClientService;
+import ru.kir.diplom.client.util.Constants;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +33,6 @@ public class StylePage {
     private List<Style> styles;
     private Button addStyle = new Button("Создать");
     private Button removeStyle = new Button("Удалить");
-    private Button correctStyle = new Button("Изменить");
     private Button back = new Button("Назад");
     private FragmentPage fragmentPage;
 
@@ -66,19 +66,29 @@ public class StylePage {
 
         VBox styleButtons = new VBox(15);
         styleButtons.setAlignment(Pos.CENTER_RIGHT);
-        styleButtons.getChildren().addAll(addStyle, correctStyle, removeStyle, back);
+        styleButtons.getChildren().addAll(addStyle, removeStyle, back);
 
         gridPane.add(styleButtons, 0, 1);
         gridPane.add(styleLabel, 1, 0);
         gridPane.add(stylesView, 1, 1);
 
-        handleBut();
+        handleBut(stylesView);
 
         scene = new Scene(gridPane);
     }
 
-    private void handleBut() {
-        addStyle.setOnAction(event -> stage.setScene(new StyleOperationPage(stage, this).getScene()));
+    private void handleBut(ListView<String> view) {
+        addStyle.setOnAction(event -> stage.setScene(new StyleOperationPage(stage, null, this, Constants.CREATE_OPERATION).getScene()));
+
+        view.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                int selectedIndex = view.getSelectionModel().getSelectedIndex();
+                if (selectedIndex != -1) {
+                    Style style = styles.get(selectedIndex);
+                    stage.setScene(new StyleOperationPage(stage, style, this, Constants.READ_OPERATION).getScene());
+                }
+            }
+        });
 
         back.setOnAction(event -> stage.setScene(fragmentPage.getScene()));
     }
@@ -89,6 +99,10 @@ public class StylePage {
 
     public List<Style> getStyles() {
         return styles;
+    }
+
+    public ListView<String> getStylesView() {
+        return stylesView;
     }
 
     public Scene getScene() {

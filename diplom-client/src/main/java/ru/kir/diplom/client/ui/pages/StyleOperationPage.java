@@ -11,13 +11,14 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import ru.kir.diplom.client.model.Style;
 import ru.kir.diplom.client.service.http.RestClientService;
+import ru.kir.diplom.client.util.Constants;
 import ru.kir.diplom.client.util.Helper;
 import ru.kir.diplom.client.util.WordConstants;
 import ru.kir.diplom.client.word.WordHelper;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Kirill Zhitelev on 22.04.2017.
@@ -27,6 +28,7 @@ public class StyleOperationPage {
     private Stage stage;
     private Button create = new Button("Создать");
     private Button back = new Button("Назад");
+    private Button correct = new Button("Изменить");
     private RestClientService clientService = RestClientService.getInstance();
     private TextField rightField = new TextField();
     private TextField leftField = new TextField();
@@ -45,10 +47,14 @@ public class StyleOperationPage {
     private CheckBox otherBold = new CheckBox();
     private CheckBox otherItalic = new CheckBox();
     private StylePage stylePage;
+    private String operation;
+    private Style style;
 
-    public StyleOperationPage(Stage stage, StylePage stylePage) {
+    public StyleOperationPage(Stage stage, Style style, StylePage stylePage, String operation) {
         this.stage = stage;
         this.stylePage = stylePage;
+        this.operation = operation;
+        this.style = style;
 
         init();
     }
@@ -171,9 +177,18 @@ public class StyleOperationPage {
 
         HBox buttonB = new HBox(10);
         buttonB.setAlignment(Pos.CENTER);
-        buttonB.getChildren().addAll(create, back);
+        buttonB.getChildren().addAll(back);
 
-        GridPane.setHalignment(create, HPos.CENTER);
+        if (operation.equals(Constants.CREATE_OPERATION)) {
+            initDefaultValues();
+            buttonB.getChildren().add(0, create);
+        }
+        else if (operation.equals(Constants.READ_OPERATION)) {
+            Map<String, String> properties = getProp();
+            initStyleValues(properties);
+            setDisable(true);
+            buttonB.getChildren().add(0, correct);
+        }
 
         gridPane.add(nameB, 1, 0);
         gridPane.add(mainLabel, 1, 1);
@@ -193,6 +208,42 @@ public class StyleOperationPage {
         gridPane.add(italicOtherB, 2, 8);
         gridPane.add(buttonB, 1, 9);
 
+        handleBut();
+
+        scene = new Scene(gridPane);
+    }
+
+    private void setDisable(boolean value) {
+        nameField.setEditable(!value);
+        sizes.setDisable(value);
+        sizes.setOpacity(1);
+        fonts.setDisable(value);
+        fonts.setOpacity(1);
+        intervals.setDisable(value);
+        intervals.setOpacity(1);
+        jc.setDisable(value);
+        jc.setOpacity(1);
+        botField.setEditable(!value);
+        topField.setEditable(!value);
+        rightField.setEditable(!value);
+        leftField.setEditable(!value);
+        jcSectBox.setDisable(value);
+        jcSectBox.setOpacity(1);
+        sizesSect.setDisable(value);
+        sizesSect.setOpacity(1);
+        sizesOther.setDisable(value);
+        sizesOther.setOpacity(1);
+        sectBold.setDisable(value);
+        sectBold.setOpacity(1);
+        sectItalic.setDisable(value);
+        sectItalic.setOpacity(1);
+        otherBold.setDisable(value);
+        otherBold.setOpacity(1);
+        otherItalic.setDisable(true);
+        otherItalic.setOpacity(1);
+    }
+
+    private void initDefaultValues() {
         sizes.setValue("12");
         fonts.setValue(WordConstants.TIMES_NEW_ROMAN);
         intervals.setValue("1.15");
@@ -204,50 +255,115 @@ public class StyleOperationPage {
         jcSectBox.setValue(WordConstants.CENTER);
         sizesSect.setValue("14");
         sizesOther.setValue("14");
+    }
 
-        handleBut();
+    private void initStyleValues(Map<String, String> properties) {
+        nameField.setText(style.getName());
+        sizes.setValue(properties.get(WordConstants.TEXT_SIZE));
+        fonts.setValue(properties.get(WordConstants.TEXT_FONT));
+        intervals.setValue(properties.get(WordConstants.INTERVAL));
+        jc.setValue(properties.get(WordConstants.TEXT_JC));
+        botField.setText(properties.get(WordConstants.MARGIN_BOT));
+        leftField.setText(properties.get(WordConstants.MARGIN_LEFT));
+        rightField.setText(properties.get(WordConstants.MARGIN_RIGHT));
+        topField.setText(properties.get(WordConstants.MARGIN_TOP));
+        jcSectBox.setValue(properties.get(WordConstants.SECTION_JC));
+        sizesSect.setValue(properties.get(WordConstants.SECTION_SIZE));
+        sizesOther.setValue(properties.get(WordConstants.OTHER_SIZE));
+        sectBold.setSelected(Boolean.parseBoolean(properties.get(WordConstants.SECTION_BOLD)));
+        sectItalic.setSelected(Boolean.parseBoolean(properties.get(WordConstants.SECTION_ITALIC)));
+        otherBold.setSelected(Boolean.parseBoolean(properties.get(WordConstants.OTHER_BOLD)));
+        otherItalic.setSelected(Boolean.parseBoolean(properties.get(WordConstants.OTHER_ITALIC)));
+    }
 
-        scene = new Scene(gridPane);
+    private Map<String, String> getProp() {
+        Map<String, String> properties = new HashMap<>();
+        List<String> prop = new ArrayList<>(Arrays.asList(style.getProperties().split(";")));
+
+        prop.forEach(property -> {
+            String[] wordProperties = property.split(":");
+            String key = wordProperties[0];
+            String value = wordProperties[1];
+
+            properties.put(key, value);
+        });
+
+        return properties;
     }
 
     private void handleBut() {
         create.setOnAction(event -> {
             String name = nameField.getText();
-            if (name.equals("")) {
-                Helper.makeInformationWindow(Alert.AlertType.ERROR, "Введите название стиля", null, null);
+            if (isFilledTextFields()) {
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Заполните все поля", null, null);
                 return;
             }
 
-            Map<String, String> prop = new HashMap<>();
-
-            prop.put(WordConstants.TEXT_SIZE, sizes.getValue());
-            prop.put(WordConstants.TEXT_FONT, fonts.getValue());
-            prop.put(WordConstants.INTERVAL, intervals.getValue());
-            prop.put(WordConstants.TEXT_JC, jc.getValue());
-            prop.put(WordConstants.MARGIN_BOT, botField.getText());
-            prop.put(WordConstants.MARGIN_LEFT, leftField.getText());
-            prop.put(WordConstants.MARGIN_RIGHT, rightField.getText());
-            prop.put(WordConstants.MARGIN_TOP, topField.getText());
-            prop.put(WordConstants.SECTION_BOLD, String.valueOf(sectBold.isSelected()));
-            prop.put(WordConstants.SECTION_ITALIC, String.valueOf(sectItalic.isSelected()));
-            prop.put(WordConstants.SECTION_JC, jcSectBox.getValue());
-            prop.put(WordConstants.SECTION_SIZE, sizesSect.getValue());
-            prop.put(WordConstants.OTHER_BOLD, String.valueOf(otherBold.isSelected()));
-            prop.put(WordConstants.OTHER_ITALIC, String.valueOf(otherItalic.isSelected()));
-            prop.put(WordConstants.OTHER_SIZE, sizesOther.getValue());
-
-            String properties = "";
-            StringBuilder builder = new StringBuilder(properties);
-
-            prop.forEach((key, property) -> builder.append(key).append(":").append(property).append(";"));
-
-            clientService.createStyle(name, String.valueOf(builder));
+            clientService.createStyle(name, getProperties());
             stylePage.getStyles().add(clientService.getStyleByName(name));
             stylePage.getStylesCollection().add(name);
             back.fire();
         });
 
+        correct.setOnAction(event -> {
+            if (correct.getText().equals("Изменить")) {
+                setDisable(false);
+                correct.setText("Сохранить");
+            }
+            else if (correct.getText().equals("Сохранить")) {
+                correct.setText("Изменить");
+
+                if (isFilledTextFields()) {
+                    Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Заполните все поля", null, null);
+                }
+
+                String name = nameField.getText();
+                String prop = getProperties();
+
+                style.setName(name);
+                style.setProperties(prop);
+
+                clientService.updateStyle(style.getId(), name, prop);
+                stylePage.getStyles().set(stylePage.getStylesView().getSelectionModel().getSelectedIndex(), style);
+                stylePage.getStylesCollection().set(stylePage.getStylesView().getSelectionModel().getSelectedIndex(), name);
+
+                back.fire();
+            }
+        });
+
         back.setOnAction(event -> stage.setScene(stylePage.getScene()));
+    }
+
+    private boolean isFilledTextFields() {
+        return nameField.getText().equals("") || botField.getText().equals("") || topField.getText().equals("") ||
+                rightField.getText().equals("") || leftField.getText().equals("");
+    }
+
+    private String getProperties() {
+        Map<String, String> prop = new HashMap<>();
+
+        prop.put(WordConstants.TEXT_SIZE, sizes.getValue());
+        prop.put(WordConstants.TEXT_FONT, fonts.getValue());
+        prop.put(WordConstants.INTERVAL, intervals.getValue());
+        prop.put(WordConstants.TEXT_JC, jc.getValue());
+        prop.put(WordConstants.MARGIN_BOT, botField.getText());
+        prop.put(WordConstants.MARGIN_LEFT, leftField.getText());
+        prop.put(WordConstants.MARGIN_RIGHT, rightField.getText());
+        prop.put(WordConstants.MARGIN_TOP, topField.getText());
+        prop.put(WordConstants.SECTION_BOLD, String.valueOf(sectBold.isSelected()));
+        prop.put(WordConstants.SECTION_ITALIC, String.valueOf(sectItalic.isSelected()));
+        prop.put(WordConstants.SECTION_JC, jcSectBox.getValue());
+        prop.put(WordConstants.SECTION_SIZE, sizesSect.getValue());
+        prop.put(WordConstants.OTHER_BOLD, String.valueOf(otherBold.isSelected()));
+        prop.put(WordConstants.OTHER_ITALIC, String.valueOf(otherItalic.isSelected()));
+        prop.put(WordConstants.OTHER_SIZE, sizesOther.getValue());
+
+        String properties = "";
+        StringBuilder builder = new StringBuilder(properties);
+
+        prop.forEach((key, property) -> builder.append(key).append(":").append(property).append(";"));
+
+        return String.valueOf(builder);
     }
 
     public Scene getScene() {

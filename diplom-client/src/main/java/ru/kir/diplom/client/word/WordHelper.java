@@ -3,17 +3,23 @@ package ru.kir.diplom.client.word;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.docx4j.model.structure.PageDimensions;
+import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.toc.Toc;
 import org.docx4j.toc.TocException;
 import org.docx4j.toc.TocGenerator;
 import org.docx4j.wml.*;
 import ru.kir.diplom.client.model.Margins;
 import ru.kir.diplom.client.model.TextProperties;
+import ru.kir.diplom.client.util.Constants;
 import ru.kir.diplom.client.util.WordConstants;
 
+import javax.xml.bind.JAXBElement;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,16 +38,27 @@ public class WordHelper {
         List<String> paragraphs = new ArrayList<>();
 
         while (matcher.find()) {
-            paragraphs.add(matcher.group());
+            if (isNoTitle(matcher.group()))
+                paragraphs.add(matcher.group() + " " + Constants.NO_TITLE);
+            else
+                paragraphs.add(matcher.group());
         }
 
         return paragraphs;
     }
 
-    public static void generateToc(WordprocessingMLPackage docxPackage) throws TocException {
+    private static boolean isNoTitle(String title) {
+        Pattern titlePatter = Pattern.compile("([1-9]\\.?)*(\\s?)*");
+        Matcher matcher = titlePatter.matcher(title);
+
+        return matcher.matches();
+    }
+
+
+    public static void generateToc(WordprocessingMLPackage docxPackage, int index) throws TocException {
         Toc.setTocHeadingText("Содержание");
         TocGenerator generator = new TocGenerator(docxPackage);
-        generator.generateToc(0, " TOC \\o \"1-3\" \\h \\z \\u ", false);
+        generator.generateToc(index, " TOC \\o \"1-4\" \\h \\z \\u ", false);
     }
 
     public static void addBreak(ObjectFactory objectFactory, MainDocumentPart documentPart, STBrType type) {
@@ -213,5 +230,86 @@ public class WordHelper {
         jc.addAll(WordConstants.CENTER, WordConstants.LEFT, WordConstants.RIGHT, WordConstants.BOTH);
 
         return jc;
+    }
+
+    private static Hdr getFtr(ObjectFactory factory) throws Exception {
+        // AddPage Numbers
+        CTSimpleField pgnum = factory.createCTSimpleField();
+        pgnum.setInstr(" PAGE \\* MERGEFORMAT ");
+        RPr RPr = factory.createRPr();
+        RPr.setNoProof(new BooleanDefaultTrue());
+        PPr ppr = factory.createPPr();
+        Jc jc = factory.createJc();
+        jc.setVal(JcEnumeration.CENTER);
+        ppr.setJc(jc);
+        PPrBase.Spacing pprbase = factory.createPPrBaseSpacing();
+        pprbase.setBefore(BigInteger.valueOf(240));
+        pprbase.setAfter(BigInteger.valueOf(0));
+        ppr.setSpacing(pprbase);
+
+        R run = factory.createR();
+        run.getContent().add(RPr);
+        pgnum.getContent().add(run);
+
+        JAXBElement<CTSimpleField> fldSimple = factory.createPFldSimple(pgnum);
+        P para = factory.createP();
+        para.getContent().add(fldSimple);
+        para.setPPr(ppr);
+        // Now add our paragraph to the footer
+        Hdr ftr = factory.createHdr();
+        ftr.getEGBlockLevelElts().add(para);
+        return ftr;
+    }
+
+    public static void addPage(ObjectFactory factory, WordprocessingMLPackage pkg, MainDocumentPart main_part) throws Exception {
+        HeaderPart cover_hdr_part = new HeaderPart(new PartName(
+                "/word/cover-header.xml")), content_hdr_part = new HeaderPart(
+                new PartName("/word/content-header.xml"));
+        pkg.getParts().put(cover_hdr_part);
+        pkg.getParts().put(content_hdr_part);
+
+        Hdr cover_hdr = getFtr(factory), content_hdr = getFtr(factory);
+
+        // Bind the header JAXB elements as representing their header parts
+        cover_hdr_part.setJaxbElement(cover_hdr);
+        content_hdr_part.setJaxbElement(content_hdr);
+
+        // Add the reference to both header parts to the Main Document Part
+        Relationship cover_hdr_rel = main_part.addTargetPart(cover_hdr_part);
+        Relationship content_hdr_rel = main_part
+                .addTargetPart(content_hdr_part);
+
+        List<SectionWrapper> sections = pkg.getDocumentModel().getSections();
+
+        System.out.println(sections);
+
+        // Get last section SectPr and create a new one if it doesn't exist
+        SectPr sectPr = sections.get(sections.size() - 1).getSectPr();
+        if (sectPr == null) {
+            sectPr = factory.createSectPr();
+            pkg.getMainDocumentPart().addObject(sectPr);
+            sections.get(sections.size() - 1).setSectPr(sectPr);
+        }
+
+        // link cover and content headers
+        HeaderReference hdr_ref; // this variable is reused
+
+        hdr_ref = factory.createHeaderReference();
+        hdr_ref.setId(cover_hdr_rel.getId());
+        hdr_ref.setType(HdrFtrRef.EVEN);
+        sectPr.getEGHdrFtrReferences().add(hdr_ref);
+
+        CTPageNumber ctPageNumber = factory.createCTPageNumber();
+        ctPageNumber.setStart(BigInteger.valueOf(1));
+        sectPr.setPgNumType(ctPageNumber);
+
+        hdr_ref = factory.createHeaderReference();
+        hdr_ref.setId(content_hdr_rel.getId());
+        hdr_ref.setType(HdrFtrRef.DEFAULT);
+        sectPr.getEGHdrFtrReferences().add(hdr_ref);
+
+        BooleanDefaultTrue boolanDefaultTrue = new BooleanDefaultTrue();
+        sectPr.setTitlePg(boolanDefaultTrue);
+        // link cover and content footers
     }
 }

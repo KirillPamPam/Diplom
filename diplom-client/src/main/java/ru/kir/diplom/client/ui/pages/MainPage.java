@@ -148,7 +148,7 @@ public class MainPage {
             String sourceName = nameField.getText();
 
             if (sourceName.equals("")) {
-                Helper.makeInformationWindow(Alert.AlertType.ERROR, "Введите название источника", null, null);
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Введите название источника", null, null);
                 return;
             }
             if (button.equals("Создать")) {
@@ -172,8 +172,11 @@ public class MainPage {
     private void makeFragmentPage(ListView<String> sourceView) {
         sourceView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-                FragmentPage fragmentPage = new FragmentPage(this, stage, singleSources.get(sourceView.getSelectionModel().getSelectedIndex()));
-                stage.setScene(fragmentPage.getScene());
+                int selectedIndex = sourceView.getSelectionModel().getSelectedIndex();
+                if (selectedIndex != -1) {
+                    FragmentPage fragmentPage = new FragmentPage(this, stage, singleSources.get(selectedIndex));
+                    stage.setScene(fragmentPage.getScene());
+                }
             }
         });
     }
