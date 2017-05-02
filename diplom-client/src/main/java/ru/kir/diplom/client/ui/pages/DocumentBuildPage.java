@@ -27,9 +27,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
-import org.docx4j.wml.Numbering;
-import org.docx4j.wml.ObjectFactory;
-import org.docx4j.wml.STBrType;
+import org.docx4j.wml.*;
 import ru.kir.diplom.client.model.Margins;
 import ru.kir.diplom.client.model.Style;
 import ru.kir.diplom.client.model.TextFragment;
@@ -40,6 +38,7 @@ import ru.kir.diplom.client.util.Helper;
 import ru.kir.diplom.client.util.WordConstants;
 import ru.kir.diplom.client.word.WordHelper;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.util.*;
@@ -67,12 +66,16 @@ public class DocumentBuildPage {
     private ProgressBar progressBar = new ProgressBar();
     private Map<String, String> properties;
     private ComboBox<String> styles;
+    private String singleName;
+    private TextField luField = new TextField();
 
     public DocumentBuildPage(Stage stage, FragmentPage fragmentPage) {
         this.stage = stage;
         this.fragmentPage = fragmentPage;
 
-        preSelect.addAll(clientService.getAllTextFragments(fragmentPage.getSingleSourceName())
+        singleName = fragmentPage.getSingleSourceName();
+
+        preSelect.addAll(clientService.getAllTextFragments(singleName)
                 .stream().map(TextFragment::getFragmentName).collect(Collectors.toList()));
         preSelect.remove("АННОТАЦИЯ");
 
@@ -106,6 +109,11 @@ public class DocumentBuildPage {
         all.setFont(Font.font("Arial", 15));
         Label chosen = new Label("Выбранные фрагменты");
         chosen.setFont(Font.font("Arial", 15));
+        Label lu = new Label("Обозначение ЛУ");
+        luField.setPrefWidth(200);
+        HBox luBox = new HBox(10);
+        luBox.setAlignment(Pos.CENTER);
+        luBox.getChildren().addAll(lu, luField);
 
         HBox styleB = new HBox(10);
         styleB.getChildren().addAll(style, styles);
@@ -119,6 +127,7 @@ public class DocumentBuildPage {
 
         gridPane.add(all, 0, 0);
         gridPane.add(chosen, 2, 0);
+        gridPane.add(luBox, 2, 2);
         gridPane.add(allFragments, 0, 1);
         gridPane.add(chosenFragments, 2, 1);
         gridPane.add(rightBut, 3, 1);
@@ -204,10 +213,20 @@ public class DocumentBuildPage {
                 return;
             }
 
+            if (luField.getText().equals("")) {
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Введите обозначение ЛУ", null, null);
+                return;
+            }
+
             properties = getProp();
             String path = getDocPath();
 
             if (path != null) {
+                if (path.equals("")) {
+                    Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Закройте документ, прежде чем создать", null, null);
+                    return;
+                }
+
                 ExecutorService executorService = Executors.newFixedThreadPool(2);
                 Future future = executorService.submit(() -> createDoc(path));
 
@@ -246,20 +265,23 @@ public class DocumentBuildPage {
         return docxPackage;
     }
 
-    private boolean createDoc(String path) {
+    private boolean createDoc(String docName) throws Docx4JException {
         WordprocessingMLPackage wordprocessingMLPackage = getPackage();
         MainDocumentPart documentPart = wordprocessingMLPackage.getMainDocumentPart();
         ObjectFactory objectFactory = Context.getWmlObjectFactory();
         WordHelper.setPageMargins(wordprocessingMLPackage, objectFactory, getMargins());
 
-        WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
+        String lu = luField.getText();
+
+        addSecondPage(documentPart, docName, lu);
+      //  WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
 
         for(int i = 1; i < 10; i++){
             documentPart.getPropertyResolver().activateStyle(String.format("TOC%s", i));
         }
 
         try {
-            WordHelper.addPage(objectFactory, wordprocessingMLPackage, documentPart);
+            WordHelper.addPage(objectFactory, wordprocessingMLPackage, documentPart, lu);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -269,9 +291,10 @@ public class DocumentBuildPage {
         WordHelper.addBreak(objectFactory, documentPart, STBrType.TEXT_WRAPPING);
         List<String> annotationPar = WordHelper.getWordParagraphs(annotation.getText());
         annotationPar.forEach(par -> documentPart.addObject(WordHelper.createPar(objectFactory, par, parTextProp("225"))));
-        int index = annotationPar.size() + 4;
+        int index = 22 + annotationPar.size() + 4;
 
         WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
+        documentPart.addObject(WordHelper.createPar(objectFactory, "СОДЕРЖАНИЕ", sectionProp()));
         WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
 
         long numId = 1;
@@ -296,7 +319,7 @@ public class DocumentBuildPage {
                             hasTitle = false;
                             String textWithNoTitle = paragraphs.get(j).replace(Constants.NO_TITLE, paragraphs.get(j + 1));
                             paragraphs.remove(j+1);
-                            documentPart.addObject(WordHelper.createPar(objectFactory, textWithNoTitle, parTextProp("0")));
+                            documentPart.addObject(WordHelper.createPar(objectFactory, textWithNoTitle.replaceFirst("[1-9]", String.valueOf(sectionIndex)), parTextProp("0")));
                         } else {
                             if (paragraphs.get(j).matches("[1-9]\\.[1-9]\\.[1-9]\\.[1-9].*")) {
                                 documentPart.addObject(WordHelper
@@ -327,9 +350,11 @@ public class DocumentBuildPage {
             if (i != selected.size()-1)
                 WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
         }
+        WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
+        addLastPage(documentPart, objectFactory);
         try {
             WordHelper.generateToc(wordprocessingMLPackage, index);
-            wordprocessingMLPackage.save(new File(path + ".docx"));
+            wordprocessingMLPackage.save(new File(docName + ".docx"));
             System.out.println("Done");
         } catch (Docx4JException e) {
             e.printStackTrace();
@@ -337,6 +362,53 @@ public class DocumentBuildPage {
         }
 
         return true;
+    }
+
+    private void addSecondPage(MainDocumentPart documentPart, String docName, String lu) throws Docx4JException {
+        int year = Calendar.getInstance().get(Calendar.YEAR);
+        WordprocessingMLPackage second = WordprocessingMLPackage.load(new File(getClass().getResource("/SecondPage.docx").getFile()));
+
+        second.getMainDocumentPart().getContent().forEach(content -> {
+            P p = (P) content;
+            p.getContent().forEach(r -> {
+                R r1 = (R) r;
+                r1.getContent().forEach(o -> {
+                    if (((JAXBElement) o).getValue() instanceof org.docx4j.wml.Text) {
+                        org.docx4j.wml.Text t = (org.docx4j.wml.Text) ((JAXBElement) o).getValue();
+                        String text = t.getValue();
+                        switch (text) {
+                            case "Год":
+                                t.setValue(String.valueOf(year));
+                                break;
+                            case "Название документа":
+                                t.setValue(docName.substring(docName.lastIndexOf("\\") + 1));
+                                break;
+                            case "НАЗВАНИЕ ПРОГРАММЫ":
+                                t.setValue(singleName.toUpperCase());
+                                break;
+                            case "код":
+                                t.setValue(lu);
+                                break;
+                        }
+                    }
+                });
+            });
+            documentPart.addObject(content);
+        });
+    }
+
+    private void addLastPage(MainDocumentPart documentPart, ObjectFactory objectFactory) throws Docx4JException {
+        WordprocessingMLPackage last = WordprocessingMLPackage.load(new File(getClass().getResource("/ChangesPage.docx").getFile()));
+
+        last.getMainDocumentPart().getContent().forEach(content -> {
+            if (content instanceof JAXBElement) {
+                ((Tc) ((JAXBElement) ((Tr) ((Tbl) ((JAXBElement) content).getValue())
+                        .getContent().get(0))
+                        .getContent().get(0)).getValue())
+                        .getContent().set(0, WordHelper.createPar(objectFactory, "Лист регистрации изменений", sectionProp()));
+            }
+            documentPart.addObject(content);
+        });
     }
 
     private String getDocPath() {

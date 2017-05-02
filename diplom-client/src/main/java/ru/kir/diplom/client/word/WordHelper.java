@@ -56,7 +56,7 @@ public class WordHelper {
 
 
     public static void generateToc(WordprocessingMLPackage docxPackage, int index) throws TocException {
-        Toc.setTocHeadingText("Содержание");
+        Toc.setTocHeadingText("");
         TocGenerator generator = new TocGenerator(docxPackage);
         generator.generateToc(index, " TOC \\o \"1-4\" \\h \\z \\u ", false);
     }
@@ -261,7 +261,7 @@ public class WordHelper {
         return ftr;
     }
 
-    public static void addPage(ObjectFactory factory, WordprocessingMLPackage pkg, MainDocumentPart main_part) throws Exception {
+    public static void addPage(ObjectFactory factory, WordprocessingMLPackage pkg, MainDocumentPart main_part, String text) throws Exception {
         HeaderPart cover_hdr_part = new HeaderPart(new PartName(
                 "/word/cover-header.xml")), content_hdr_part = new HeaderPart(
                 new PartName("/word/content-header.xml"));
@@ -269,6 +269,19 @@ public class WordHelper {
         pkg.getParts().put(content_hdr_part);
 
         Hdr cover_hdr = getFtr(factory), content_hdr = getFtr(factory);
+
+        TextProperties textProperties = new TextProperties();
+        textProperties.setBold(true);
+        textProperties.setItalic(false);
+        textProperties.setFontFamily(WordConstants.TIMES_NEW_ROMAN);
+        textProperties.setSize("28");
+        textProperties.setJustification(WordConstants.JC_CENTER);
+        textProperties.setIndent("0");
+        textProperties.setStyle("");
+        textProperties.setLineInterval("240");
+
+        cover_hdr.getContent().add(createPar(factory, text, textProperties));
+        content_hdr.getContent().add(createPar(factory, text, textProperties));
 
         // Bind the header JAXB elements as representing their header parts
         cover_hdr_part.setJaxbElement(cover_hdr);
@@ -280,8 +293,6 @@ public class WordHelper {
                 .addTargetPart(content_hdr_part);
 
         List<SectionWrapper> sections = pkg.getDocumentModel().getSections();
-
-        System.out.println(sections);
 
         // Get last section SectPr and create a new one if it doesn't exist
         SectPr sectPr = sections.get(sections.size() - 1).getSectPr();
@@ -296,11 +307,11 @@ public class WordHelper {
 
         hdr_ref = factory.createHeaderReference();
         hdr_ref.setId(cover_hdr_rel.getId());
-        hdr_ref.setType(HdrFtrRef.EVEN);
+        hdr_ref.setType(HdrFtrRef.FIRST);
         sectPr.getEGHdrFtrReferences().add(hdr_ref);
 
         CTPageNumber ctPageNumber = factory.createCTPageNumber();
-        ctPageNumber.setStart(BigInteger.valueOf(1));
+        ctPageNumber.setStart(BigInteger.valueOf(2));
         sectPr.setPgNumType(ctPageNumber);
 
         hdr_ref = factory.createHeaderReference();
