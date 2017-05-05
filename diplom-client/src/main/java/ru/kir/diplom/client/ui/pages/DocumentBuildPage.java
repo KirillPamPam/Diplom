@@ -40,7 +40,7 @@ import ru.kir.diplom.client.word.WordHelper;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import java.io.File;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -232,14 +232,14 @@ public class DocumentBuildPage {
 
                 progressBar.setVisible(true);
 
-                executorService.submit(() -> handleResult(future, vBox));
+                executorService.submit(() -> handleResult(future));
 
                 executorService.shutdown();
             }
         });
     }
 
-    private void handleResult(Future future, VBox vBox) {
+    private void handleResult(Future future) {
         try {
             Boolean result = (Boolean) future.get();
             if (result)
@@ -273,7 +273,8 @@ public class DocumentBuildPage {
 
         String lu = luField.getText();
 
-        addSecondPage(documentPart, docName, lu);
+        addFirstOrSecondPage(documentPart, docName, lu, "/FirstPage.docx");
+        addFirstOrSecondPage(documentPart, docName, lu, "/SecondPage.docx");
       //  WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
 
         for(int i = 1; i < 10; i++){
@@ -291,7 +292,7 @@ public class DocumentBuildPage {
         WordHelper.addBreak(objectFactory, documentPart, STBrType.TEXT_WRAPPING);
         List<String> annotationPar = WordHelper.getWordParagraphs(annotation.getText());
         annotationPar.forEach(par -> documentPart.addObject(WordHelper.createPar(objectFactory, par, parTextProp("225"))));
-        int index = 22 + annotationPar.size() + 4;
+        int index = 44 + annotationPar.size() + 4;
 
         WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
         documentPart.addObject(WordHelper.createPar(objectFactory, "СОДЕРЖАНИЕ", sectionProp()));
@@ -333,8 +334,7 @@ public class DocumentBuildPage {
                     else
                         documentPart.addObject(WordHelper
                                 .createPar(objectFactory, paragraphs.get(j).replaceFirst("[1-9]", String.valueOf(sectionIndex)), parNameProp(WordConstants.HEADING2)));
-
-                    if (!paragraphs.get(j + 1).matches("[1-9].*") && hasTitle)
+                    if (hasTitle && !paragraphs.get(j + 1).matches("[1-9].*"))
                         WordHelper.addBreak(objectFactory, documentPart, STBrType.TEXT_WRAPPING);
                 } else if (paragraphs.get(j).matches("-.*")) {
                     documentPart.addObject(WordHelper
@@ -344,7 +344,23 @@ public class DocumentBuildPage {
                     }
                 }
                 else {
-                    documentPart.addObject(WordHelper.createPar(objectFactory, paragraphs.get(j), parTextProp("225")));
+                    if (paragraphs.get(j).matches("\\t?C:\\\\.*")) {
+                        try {
+                            String[] images = paragraphs.get(j).split("-");
+                            if (images.length == 2) {
+                                String imagePath = images[0];
+                                String imageName = images[1];
+                                if (imagePath.contains("\t"))
+                                    imagePath = imagePath.replaceFirst("\\t", "");
+                                documentPart.addObject(addImage(wordprocessingMLPackage, imagePath));
+                                documentPart.addObject(WordHelper.createPar(objectFactory, imageName, imageNameProp()));
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    else
+                        documentPart.addObject(WordHelper.createPar(objectFactory, paragraphs.get(j), parTextProp("225")));
                 }
             }
             if (i != selected.size()-1)
@@ -355,7 +371,6 @@ public class DocumentBuildPage {
         try {
             WordHelper.generateToc(wordprocessingMLPackage, index);
             wordprocessingMLPackage.save(new File(docName + ".docx"));
-            System.out.println("Done");
         } catch (Docx4JException e) {
             e.printStackTrace();
             return false;
@@ -364,9 +379,9 @@ public class DocumentBuildPage {
         return true;
     }
 
-    private void addSecondPage(MainDocumentPart documentPart, String docName, String lu) throws Docx4JException {
+    private void addFirstOrSecondPage(MainDocumentPart documentPart, String docName, String lu, String path) throws Docx4JException {
         int year = Calendar.getInstance().get(Calendar.YEAR);
-        WordprocessingMLPackage second = WordprocessingMLPackage.load(new File(getClass().getResource("/SecondPage.docx").getFile()));
+        WordprocessingMLPackage second = WordprocessingMLPackage.load(getClass().getResourceAsStream(path));
 
         second.getMainDocumentPart().getContent().forEach(content -> {
             P p = (P) content;
@@ -398,7 +413,7 @@ public class DocumentBuildPage {
     }
 
     private void addLastPage(MainDocumentPart documentPart, ObjectFactory objectFactory) throws Docx4JException {
-        WordprocessingMLPackage last = WordprocessingMLPackage.load(new File(getClass().getResource("/ChangesPage.docx").getFile()));
+        WordprocessingMLPackage last = WordprocessingMLPackage.load(getClass().getResourceAsStream("/ChangesPage.docx"));
 
         last.getMainDocumentPart().getContent().forEach(content -> {
             if (content instanceof JAXBElement) {
@@ -409,6 +424,33 @@ public class DocumentBuildPage {
             }
             documentPart.addObject(content);
         });
+    }
+
+    private P addImage(WordprocessingMLPackage mlPackage, String path) throws Exception {
+        File file = new File(path);
+
+        InputStream inputStream = new FileInputStream(file);
+        long fileLength = file.length();
+
+        byte[] bytes = new byte[(int)fileLength];
+
+        int offset = 0;
+        int numRead = 0;
+
+        while(offset < bytes.length
+                && (numRead = inputStream.read(bytes, offset, bytes.length-offset)) >= 0) {
+            offset += numRead;
+        }
+
+        inputStream.close();
+/*
+        String filenameHint = null;
+        String altText = null;*/
+
+        int id1 = 0;
+        int id2 = 1;
+
+        return WordHelper.newImage(mlPackage, bytes, null, null, id1, id2);
     }
 
     private String getDocPath() {
@@ -502,6 +544,20 @@ public class DocumentBuildPage {
         textProperties.setSize(properties.get(WordConstants.TEXT_SIZE));
         textProperties.setJustification(WordConstants.JC_BOTH);
         textProperties.setIndent(indent);
+        textProperties.setStyle("");
+        textProperties.setLineInterval(properties.get(WordConstants.INTERVAL));
+
+        return textProperties;
+    }
+
+    private TextProperties imageNameProp() {
+        TextProperties textProperties = new TextProperties();
+        textProperties.setBold(false);
+        textProperties.setItalic(false);
+        textProperties.setFontFamily(properties.get(WordConstants.TEXT_FONT));
+        textProperties.setSize(properties.get(WordConstants.TEXT_SIZE));
+        textProperties.setJustification(WordConstants.JC_CENTER);
+        textProperties.setIndent("0");
         textProperties.setStyle("");
         textProperties.setLineInterval(properties.get(WordConstants.INTERVAL));
 

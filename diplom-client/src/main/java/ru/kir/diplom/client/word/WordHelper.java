@@ -2,11 +2,13 @@ package ru.kir.diplom.client.word;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.relationships.Relationship;
@@ -322,5 +324,29 @@ public class WordHelper {
         BooleanDefaultTrue boolanDefaultTrue = new BooleanDefaultTrue();
         sectPr.setTitlePg(boolanDefaultTrue);
         // link cover and content footers
+    }
+
+    public static P newImage(WordprocessingMLPackage wordMLPackage, byte[] bytes,
+                              String filenameHint, String altText, int id1, int id2) throws Exception {
+        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordMLPackage, bytes);
+        Inline inline = imagePart.createImageInline(filenameHint, altText, id1, id2, false);
+
+        ObjectFactory factory = new ObjectFactory();
+
+        P  p = factory.createP();
+        R  run = factory.createR();
+        PPr pPr = factory.createPPr();
+
+        Jc justification = factory.createJc();
+        justification.setVal(JcEnumeration.CENTER);
+        pPr.setJc(justification);
+        p.setPPr(pPr);
+
+        p.getContent().add(run);
+        Drawing drawing = factory.createDrawing();
+        run.getContent().add(drawing);
+        drawing.getAnchorOrInline().add(inline);
+
+        return p;
     }
 }
