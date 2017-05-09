@@ -28,6 +28,7 @@ public class FragmentOperationPage {
     private Button add = new Button("Создать");
     private Button cancel = new Button("Отмена");
     private Button update = new Button("Изменить");
+    private Button help = new Button("?");
     private FragmentPage fragmentPage;
     private TextField nameField = new TextField();
     private TextArea textArea = new TextArea();
@@ -66,6 +67,7 @@ public class FragmentOperationPage {
         gridPane.add(text, 0, 1);
         gridPane.add(nameField, 1, 0);
         gridPane.add(textArea, 1, 1);
+        gridPane.add(help, 2, 1);
 
         if (Objects.equals(operation, Constants.READ_OPERATION)) {
             nameField.setText(textFragment.getFragmentName());
@@ -125,6 +127,20 @@ public class FragmentOperationPage {
         });
 
         cancel.setOnAction(event -> stage.setScene(fragmentPage.getScene()));
+
+        help.setOnAction(event -> {
+            String content = "Правила форматирования текста:\n" +
+                    "1. Обозначение отдельных частей:\n" +
+                    "\t-подразделы обозначать следующим правилом - 1.1\n" +
+                    "\t-пункты обозначать следующим правилом - 1.1.1\n" +
+                    "\t-подпункты обозначать следующим правилом - 1.1.1.1\n" +
+                    "2 Если какая-то часть не имеет заголовка, то начинать текст необходимо с новой строки\n" +
+                    "3. Каждый новый абзац должен начинаться с красной строки (клавиша TAB).\n" +
+                    "4. В тексте допускается обозначать ссылки на рисунки. Ссылка представляет собой абсолютный путь к файлу." +
+                    "Ссылка всегда должна быть оборзначена с новой красной строки. Пример: C:\\example.png - Рисунок 1\n" +
+                    "5. Элементы перечисления должны начинаться с новой строки, при чем обозначать элемент перечисления необходимо символом \"-\"";
+            Helper.makeInformationWindow(Alert.AlertType.INFORMATION, content, null, "Форматирование текста");
+        });
 
         update.setOnAction(event -> {
             if (update.getText().equals("Изменить")) {
