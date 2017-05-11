@@ -103,7 +103,7 @@ public class FragmentPage {
 
         removeFragment.setOnAction(event -> {
             if (fragmentView.getSelectionModel().getSelectedItem() == null) {
-                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите фрагмент", null, null);
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите фрагмент", null, null, null);
                 return;
             }
 

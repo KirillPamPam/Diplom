@@ -41,7 +41,7 @@ public class WordHelper {
 
         while (matcher.find()) {
             if (isNoTitle(matcher.group()))
-                paragraphs.add(matcher.group() + " " + Constants.NO_TITLE);
+                paragraphs.add(matcher.group() + Constants.NO_TITLE);
             else
                 paragraphs.add(matcher.group());
         }

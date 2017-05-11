@@ -11,8 +11,12 @@ import java.util.regex.Pattern;
  * Created by Kirill Zhitelev on 09.04.2017.
  */
 public class Helper {
-    public static void makeInformationWindow(Alert.AlertType type, String contentText, String headerText, String title) {
+    public static void makeInformationWindow(Alert.AlertType type,
+                                             String contentText,
+                                             String headerText, String title, Double width) {
         Alert alert = new Alert(type);
+        if (width != null)
+            alert.getDialogPane().setPrefWidth(width);
         alert.setContentText(contentText);
         alert.setHeaderText(headerText);
         alert.setTitle(title);

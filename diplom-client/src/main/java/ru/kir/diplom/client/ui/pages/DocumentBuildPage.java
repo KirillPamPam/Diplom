@@ -204,17 +204,17 @@ public class DocumentBuildPage {
 
         create.setOnAction(event -> {
             if (selected.size() == 0) {
-                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите хотя бы один фрагмент", null, null);
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите хотя бы один фрагмент", null, null, null);
                 return;
             }
 
             if (styles.getValue().equals("")) {
-                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите стиль", null, null);
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите стиль", null, null, null);
                 return;
             }
 
             if (luField.getText().equals("")) {
-                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Введите обозначение ЛУ", null, null);
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Введите обозначение ЛУ", null, null, null);
                 return;
             }
 
@@ -223,7 +223,7 @@ public class DocumentBuildPage {
 
             if (path != null) {
                 if (path.equals("")) {
-                    Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Закройте документ, прежде чем создать", null, null);
+                    Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Закройте документ, прежде чем создать", null, null, null);
                     return;
                 }
 
@@ -245,7 +245,7 @@ public class DocumentBuildPage {
             if (result)
                 Platform.runLater(() -> {
                     progressBar.setVisible(false);
-                    Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Документ создан", null, null);
+                    Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Документ создан", null, null, null);
                 });
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();

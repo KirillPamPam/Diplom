@@ -295,7 +295,7 @@ public class StyleOperationPage {
         create.setOnAction(event -> {
             String name = nameField.getText();
             if (isFilledTextFields()) {
-                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Заполните все поля", null, null);
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Заполните все поля", null, null, null);
                 return;
             }
 
@@ -314,7 +314,7 @@ public class StyleOperationPage {
                 correct.setText("Изменить");
 
                 if (isFilledTextFields()) {
-                    Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Заполните все поля", null, null);
+                    Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Заполните все поля", null, null, null);
                 }
 
                 String name = nameField.getText();

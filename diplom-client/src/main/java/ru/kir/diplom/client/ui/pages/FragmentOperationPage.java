@@ -111,12 +111,12 @@ public class FragmentOperationPage {
             String text = textArea.getText();
 
             if (!Helper.checkFragmentName(name)) {
-                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Название фрагмента должно начинаться с буквы", null, null);
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Название фрагмента должно начинаться с буквы", null, null, null);
                 return;
             }
 
             if (name.equals("") || text.equals("")) {
-                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Заполните все поля", null, null);
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Заполните все поля", null, null, null);
                 return;
             }
 
@@ -128,9 +128,7 @@ public class FragmentOperationPage {
 
         cancel.setOnAction(event -> stage.setScene(fragmentPage.getScene()));
 
-        help.setOnAction(event -> {
-            Helper.makeInformationWindow(Alert.AlertType.INFORMATION, Constants.FORMAT, null, "Форматирование текста");
-        });
+        help.setOnAction(event -> Helper.makeInformationWindow(Alert.AlertType.INFORMATION, Constants.FORMAT, null, "Форматирование текста", 800.0));
 
         update.setOnAction(event -> {
             if (update.getText().equals("Изменить")) {
@@ -143,7 +141,7 @@ public class FragmentOperationPage {
                 String text = textArea.getText();
 
                 if (!Helper.checkFragmentName(name)) {
-                    Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Название фрагмента должно начинаться с буквы", null, null);
+                    Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Название фрагмента должно начинаться с буквы", null, null, null);
                     return;
                 }
 

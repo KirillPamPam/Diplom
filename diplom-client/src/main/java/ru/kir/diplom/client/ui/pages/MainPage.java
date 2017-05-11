@@ -81,7 +81,7 @@ public class MainPage {
 
         correctSource.setOnAction(event -> {
             if (sourceView.getSelectionModel().getSelectedItem() == null || sourceView.getSelectionModel().getSelectedItems().size() > 1) {
-                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите источник", null, null);
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите источник", null, null, null);
                 return;
             }
             initPopup("Изменить", sourceView);
@@ -89,7 +89,7 @@ public class MainPage {
 
         removeSource.setOnAction(event -> {
             if (sourceView.getSelectionModel().getSelectedItem() == null) {
-                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите источник", null, null);
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Выберите источник", null, null, null);
                 return;
             }
 
@@ -148,7 +148,7 @@ public class MainPage {
             String sourceName = nameField.getText();
 
             if (sourceName.equals("")) {
-                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Введите название источника", null, null);
+                Helper.makeInformationWindow(Alert.AlertType.INFORMATION, "Введите название источника", null, null, null);
                 return;
             }
             if (button.equals("Создать")) {
