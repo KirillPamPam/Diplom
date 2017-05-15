@@ -18,6 +18,8 @@ import java.util.List;
 public class TextFragmentDaoImpl implements TextFragmentDao {
     @Autowired
     private SessionFactory sessionFactory;
+    @Autowired
+    private SingleSourceDao singleSourceDao;
 
     @Override
     public void createTextFragment(TextFragment textFragment) {
@@ -26,10 +28,10 @@ public class TextFragmentDaoImpl implements TextFragmentDao {
     }
 
     @Override
-    public TextFragment getTextFragmentByName(String name) {
+    public TextFragment getTextFragmentByName(String name, String sourceName) {
         Session session = sessionFactory.getCurrentSession();
         return (TextFragment) session.createCriteria(TextFragment.class)
-                .add(Restrictions.eq("fragmentName", name)).uniqueResult();
+                .add(Restrictions.eq("fragmentName", name)).add(Restrictions.eq("singleSource", singleSourceDao.getSingleSourceByName(sourceName))).uniqueResult();
     }
 
     @Override

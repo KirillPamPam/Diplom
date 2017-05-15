@@ -9,12 +9,14 @@ import org.springframework.web.bind.annotation.*;
 import ru.kir.diplom.backend.model.SingleSource;
 import ru.kir.diplom.backend.model.Style;
 import ru.kir.diplom.backend.model.TextFragment;
+import ru.kir.diplom.backend.model.client.ClientDocPattern;
 import ru.kir.diplom.backend.model.client.ClientSingleSource;
 import ru.kir.diplom.backend.model.client.ClientStyle;
 import ru.kir.diplom.backend.model.client.ClientTextFragment;
 import ru.kir.diplom.backend.model.exception.InvalidRequestException;
 import ru.kir.diplom.backend.model.exception.NullRequestException;
 import ru.kir.diplom.backend.model.rest.*;
+import ru.kir.diplom.backend.service.DocPatternService;
 import ru.kir.diplom.backend.service.SingleSourceService;
 import ru.kir.diplom.backend.service.StyleService;
 import ru.kir.diplom.backend.service.TextFragmentService;
@@ -35,6 +37,41 @@ public class SingleSourceController {
     private SingleSourceService sourceService;
     @Autowired
     private StyleService styleService;
+    @Autowired
+    private DocPatternService docPatternService;
+
+    @RequestMapping(value = "get/docpattern/{id}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody ClientDocPattern getDocPattern(@PathVariable(Constants.ID) String id) {
+        ClientDocPattern clientDocPattern = docPatternService.getDocPatternById(id);
+
+        if (clientDocPattern == null)
+            throw new NullRequestException(Constants.WRONG_ID, id, Style.class, Constants.ID);
+
+        return clientDocPattern;
+    }
+
+    @RequestMapping(value = "getall/docpatterns", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody List<ClientDocPattern> getDocPattern() {
+        return docPatternService.getAll();
+    }
+
+    @RequestMapping(value = "getall/docpattern/{template}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody List<ClientDocPattern> getDocPatternByTemplate(@PathVariable("template") String template) {
+        return docPatternService.getDocPatternByTemplate(template);
+    }
+
+    @RequestMapping(value = "create/docpattern", method = RequestMethod.POST,
+            produces = "application/json", consumes = "application/json")
+    public @ResponseBody ResponseEntity createDocPattern(@RequestBody RequestCreateDocPattern docPattern, BindingResult result) {
+        if(result.hasErrors()) {
+            throw new InvalidRequestException(Constants.INVALID_REQUEST, result);
+        }
+        else {
+            docPatternService.createDocPattern(docPattern);
+            return getOkResponse();
+        }
+    }
+
 
     @RequestMapping(value = "get/style/{id}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody ClientStyle getStyle(@PathVariable(Constants.ID) String id) {
@@ -111,9 +148,9 @@ public class SingleSourceController {
         return textFragment;
     }
 
-    @RequestMapping(value = "get/fragment/name/{name}", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody ClientTextFragment getTextFragmentByName(@PathVariable(Constants.NAME) String name) {
-        ClientTextFragment textFragment = fragmentService.getTextFragmentByName(name);
+    @RequestMapping(value = "get/fragment/name/{name}/{sourceName}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody ClientTextFragment getTextFragmentByName(@PathVariable(Constants.NAME) String name, @PathVariable("sourceName") String sourceName) {
+        ClientTextFragment textFragment = fragmentService.getTextFragmentByName(name, sourceName);
 
         if(textFragment == null)
             throw new NullRequestException(Constants.WRONG_NAME, name, TextFragment.class, Constants.NAME);

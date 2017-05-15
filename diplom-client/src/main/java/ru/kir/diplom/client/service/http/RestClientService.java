@@ -7,6 +7,7 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
+import ru.kir.diplom.client.model.DocPattern;
 import ru.kir.diplom.client.model.Style;
 import ru.kir.diplom.client.model.http.*;
 import ru.kir.diplom.client.model.SingleSource;
@@ -39,6 +40,39 @@ public class RestClientService {
         clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
 
         client = Client.create(clientConfig);
+    }
+
+    public DocPattern getDocPattern(String id) {
+        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.GET_DOCPATTERN + id);
+        ClientResponse response = webResource.get(ClientResponse.class);
+        if (response.getStatus() == Integer.parseInt(Constants.BAD_REQUEST))
+            throw new RuntimeException(response.getEntity(HttpResponseDescriptor.class).getMessage());
+
+        return response.getEntity(DocPattern.class);
+    }
+
+    public List<DocPattern> getAllDocPatterns() {
+        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.GET_ALL_DOCPATTERN);
+        ClientResponse response = webResource.get(ClientResponse.class);
+
+        return response.getEntity(new GenericType<List<DocPattern>>() {});
+    }
+
+    public List<DocPattern> getAllDocPatternsByTemplate(String template) {
+        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.GET_DOCPATTERN_BY_TEMPLATE + template);
+        ClientResponse response = webResource.get(ClientResponse.class);
+
+        return response.getEntity(new GenericType<List<DocPattern>>() {});
+    }
+
+    public HttpResponseDescriptor createDocPattern(String name, String fragments, String style, String luValue) {
+        RequestCreateDocPattern docPattern = new RequestCreateDocPattern(style, fragments, name, luValue);
+        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.CREATE_DOCPATTERN);
+        ClientResponse response = webResource.type(Constants.APP_JSON).post(ClientResponse.class, docPattern);
+        if (response.getStatus() == Integer.parseInt(Constants.BAD_REQUEST))
+            throw new RuntimeException(response.getEntity(HttpResponseDescriptor.class).getMessage());
+
+        return response.getEntity(HttpResponseDescriptor.class);
     }
 
     public Style getStyle(String id) {
@@ -105,8 +139,8 @@ public class RestClientService {
         return response.getEntity(TextFragment.class);
     }
 
-    public TextFragment getTextFragmentByName(String name) {
-        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.GET_TEXT_FRAGMENT_BY_NAME + name);
+    public TextFragment getTextFragmentByName(String name, String sourceName) {
+        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.GET_TEXT_FRAGMENT_BY_NAME + name + "/" + sourceName);
         ClientResponse response = webResource.get(ClientResponse.class);
         if (response.getStatus() == Integer.parseInt(Constants.BAD_REQUEST))
             throw new RuntimeException(response.getEntity(HttpResponseDescriptor.class).getMessage());

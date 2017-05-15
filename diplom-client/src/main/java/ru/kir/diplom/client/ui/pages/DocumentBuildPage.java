@@ -59,6 +59,7 @@ public class DocumentBuildPage {
     private ListView<String> chosenFragments;
     private Button create = new Button("Создать");
     private Button back = new Button("Назад");
+    private Button patterns = new Button("История шаблонов");
     private ObservableList<String> selected = FXCollections.observableArrayList();
     private ObservableList<String> preSelect = FXCollections.observableArrayList();
     private RestClientService clientService = RestClientService.getInstance();
@@ -77,7 +78,9 @@ public class DocumentBuildPage {
 
         preSelect.addAll(clientService.getAllTextFragments(singleName)
                 .stream().map(TextFragment::getFragmentName).collect(Collectors.toList()));
-        preSelect.remove("АННОТАЦИЯ");
+        List<String> removing = preSelect.stream().filter(fragment -> fragment.contains("АННОТАЦИЯ")).collect(Collectors.toList());
+        removing.forEach(preSelect::remove);
+        //preSelect.remove();
 
         init();
     }
@@ -119,7 +122,7 @@ public class DocumentBuildPage {
         styleB.getChildren().addAll(style, styles);
 
         VBox rightBut = new VBox(10);
-        rightBut.getChildren().addAll(styleB, create, back, progressBar);
+        rightBut.getChildren().addAll(patterns, styleB, create, back, progressBar);
         rightBut.setAlignment(Pos.CENTER_LEFT);
 
         GridPane.setHalignment(all, HPos.CENTER);
@@ -201,6 +204,13 @@ public class DocumentBuildPage {
         });
 
         back.setOnAction(event -> stage.setScene(fragmentPage.getScene()));
+
+        patterns.setOnAction(event -> {
+            TablePage tablePage = new TablePage(stage, fragmentPage);
+            tablePage.initData(clientService.getAllDocPatterns());
+
+            stage.setScene(tablePage.getScene());
+        });
 
         create.setOnAction(event -> {
             if (selected.size() == 0) {
@@ -287,8 +297,8 @@ public class DocumentBuildPage {
             e.printStackTrace();
         }
 
-        TextFragment annotation = clientService.getTextFragmentByName("АННОТАЦИЯ");
-        documentPart.addObject(WordHelper.createPar(objectFactory, annotation.getFragmentName(), sectionProp()));
+        TextFragment annotation = clientService.getTextFragmentByName("АННОТАЦИЯ - " + docName.substring(docName.lastIndexOf("\\") + 1), singleName);
+        documentPart.addObject(WordHelper.createPar(objectFactory, annotation.getFragmentName().substring(0, annotation.getFragmentName().indexOf("-") - 1), sectionProp()));
         WordHelper.addBreak(objectFactory, documentPart, STBrType.TEXT_WRAPPING);
         List<String> annotationPar = WordHelper.getWordParagraphs(annotation.getText());
         annotationPar.forEach(par -> documentPart.addObject(WordHelper.createPar(objectFactory, par, parTextProp("225"))));
@@ -300,10 +310,15 @@ public class DocumentBuildPage {
 
         long numId = 1;
 
+        String patternFragments = "";
+        StringBuilder builder = new StringBuilder(patternFragments);
+
+        selected.forEach(selected -> builder.append(selected).append(";"));
+
         for (int i = 0; i < selected.size(); i++) {
             int sectionIndex = i + 1;
 
-            TextFragment textFragment = clientService.getTextFragmentByName(selected.get(i));
+            TextFragment textFragment = clientService.getTextFragmentByName(selected.get(i), singleName);
 
             String name = sectionIndex + ". " + textFragment.getFragmentName();
 
@@ -371,6 +386,8 @@ public class DocumentBuildPage {
         try {
             WordHelper.generateToc(wordprocessingMLPackage, index);
             wordprocessingMLPackage.save(new File(docName + ".docx"));
+            clientService.createDocPattern(docName.substring(docName.lastIndexOf("\\") + 1),
+                    builder.toString(), styles.getValue(), luField.getText());
         } catch (Docx4JException e) {
             e.printStackTrace();
             return false;
@@ -566,5 +583,21 @@ public class DocumentBuildPage {
 
     public Scene getScene() {
         return scene;
+    }
+
+    public ObservableList<String> getSelected() {
+        return selected;
+    }
+
+    public TextField getLuField() {
+        return luField;
+    }
+
+    public ComboBox<String> getStyles() {
+        return styles;
+    }
+
+    public ObservableList<String> getPreSelect() {
+        return preSelect;
     }
 }

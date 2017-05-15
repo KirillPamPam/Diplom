@@ -16,7 +16,7 @@ public interface TextFragmentService {
 
     ClientTextFragment getClientTextFragmentById(String id);
 
-    ClientTextFragment getTextFragmentByName(String name);
+    ClientTextFragment getTextFragmentByName(String name, String sourceName);
 
     TextFragment getTextFragmentById(String id);
 

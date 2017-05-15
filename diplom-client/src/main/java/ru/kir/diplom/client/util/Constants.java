@@ -27,6 +27,10 @@ public class Constants {
     public static final String CREATE_STYLE = "/create/style/";
     public static final String UPDATE_STYLE = "/update/style/";
     public static final String DELETE_STYLE = "/delete/style/";
+    public static final String GET_DOCPATTERN = "/get/docpattern/";
+    public static final String GET_DOCPATTERN_BY_TEMPLATE = "/getall/docpattern/";
+    public static final String GET_ALL_DOCPATTERN = "/getall/docpatterns/";
+    public static final String CREATE_DOCPATTERN = "/create/docpattern/";
 
     public static final String FORMAT = "Правила форматирования текста:\n" +
             "1. Обозначение отдельных частей:\n" +
@@ -37,7 +41,9 @@ public class Constants {
             "3. Каждый новый абзац должен начинаться с красной строки (клавиша TAB).\n" +
             "4. В тексте допускается обозначать ссылки на рисунки. Ссылка представляет собой абсолютный путь к файлу." +
             "Ссылка всегда должна быть оборзначена с новой красной строки. Пример: C:\\example.png - Рисунок 1\n" +
-            "5. Элементы перечисления должны начинаться с новой строки, при чем обозначать элемент перечисления необходимо символом \"-\"";
+            "5. Элементы перечисления должны начинаться с новой строки, при чем обозначать элемент перечисления необходимо символом \"-\"\n" +
+            "6. Название раздела АННОТАЦИЯ должно быть составлено так: АННОТАЦИЯ - [название конечного документа].\n" +
+            "По корректному названию документа нужный раздел автоматически попадет в него.";
 
     public static final String CREATE_OPERATION = "create";
     public static final String READ_OPERATION = "read";

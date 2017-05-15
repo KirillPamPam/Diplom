@@ -29,9 +29,15 @@
             <groupId>org.docx4j</groupId>
             <artifactId>docx4j</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
+        <finalName>DocBuild</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

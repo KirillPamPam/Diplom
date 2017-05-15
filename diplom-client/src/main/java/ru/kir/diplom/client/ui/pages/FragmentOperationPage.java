@@ -121,7 +121,7 @@ public class FragmentOperationPage {
             }
 
             clientService.createTextFragment(name, text, fragmentPage.getSingleSourceName());
-            fragmentPage.getFragments().add(clientService.getTextFragmentByName(name));
+            fragmentPage.getFragments().add(clientService.getTextFragmentByName(name, fragmentPage.getSingleSourceName()));
             fragmentPage.getFragmentsCollection().add(name);
             cancel.fire();
         });
