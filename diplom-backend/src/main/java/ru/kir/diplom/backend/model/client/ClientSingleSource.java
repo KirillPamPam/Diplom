@@ -10,6 +10,15 @@ public class ClientSingleSource {
     private String id;
     private String singleName;
     private List<ClientTextFragment> textFragments;
+    private List<ClientDocPattern> docPatterns;
+
+    public List<ClientDocPattern> getDocPatterns() {
+        return docPatterns;
+    }
+
+    public void setDocPatterns(List<ClientDocPattern> docPatterns) {
+        this.docPatterns = docPatterns;
+    }
 
     public String getSingleName() {
         return singleName;
@@ -42,11 +51,12 @@ public class ClientSingleSource {
         ClientSingleSource that = (ClientSingleSource) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(singleName, that.singleName) &&
-                Objects.equals(textFragments, that.textFragments);
+                Objects.equals(textFragments, that.textFragments) &&
+                Objects.equals(docPatterns, that.docPatterns);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, singleName, textFragments);
+        return Objects.hash(id, singleName, textFragments, docPatterns);
     }
 }

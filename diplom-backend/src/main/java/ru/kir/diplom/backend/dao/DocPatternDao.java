@@ -1,6 +1,7 @@
 package ru.kir.diplom.backend.dao;
 
 import ru.kir.diplom.backend.model.DocPattern;
+import ru.kir.diplom.backend.model.SingleSource;
 
 import java.util.List;
 
@@ -9,9 +10,9 @@ import java.util.List;
  */
 public interface DocPatternDao {
 
-    void createDocPattern(DocPattern docPattern);
+    void createDocPattern(DocPattern docPattern, SingleSource singleSource);
 
-    List<DocPattern> getAll();
+    List<DocPattern> getAll(SingleSource singleSource);
 
     List<DocPattern> getDocPatternByTemplate(String template);
 

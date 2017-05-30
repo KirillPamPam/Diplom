@@ -7,6 +7,7 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.kir.diplom.backend.model.DocPattern;
+import ru.kir.diplom.backend.model.SingleSource;
 
 import java.util.List;
 
@@ -19,17 +20,17 @@ public class DocPatternDaoImpl implements DocPatternDao {
     private SessionFactory sessionFactory;
 
     @Override
-    public void createDocPattern(DocPattern docPattern) {
+    public void createDocPattern(DocPattern docPattern, SingleSource singleSource) {
         Session session = sessionFactory.getCurrentSession();
-        if (!getAll().contains(docPattern))
+        if (!getAll(singleSource).contains(docPattern))
             session.save(docPattern);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<DocPattern> getAll() {
+    public List<DocPattern> getAll(SingleSource singleSource) {
         Session session = sessionFactory.getCurrentSession();
-        return session.createCriteria(DocPattern.class).list();
+        return session.createCriteria(DocPattern.class).add(Restrictions.eq("singleSource", singleSource)).list();
     }
 
     @Override

@@ -23,6 +23,17 @@ public class SingleSource {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "singleSource", cascade = CascadeType.ALL)
     private Set<TextFragment> textFragments;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "singleSource", cascade = CascadeType.ALL)
+    private Set<DocPattern> docPatterns;
+
+    public Set<DocPattern> getDocPatterns() {
+        return docPatterns;
+    }
+
+    public void setDocPatterns(Set<DocPattern> docPatterns) {
+        this.docPatterns = docPatterns;
+    }
+
     public Set<TextFragment> getTextFragments() {
         return textFragments;
     }

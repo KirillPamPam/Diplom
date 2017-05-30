@@ -1,5 +1,6 @@
 package ru.kir.diplom.backend.service;
 
+import ru.kir.diplom.backend.model.SingleSource;
 import ru.kir.diplom.backend.model.client.ClientDocPattern;
 import ru.kir.diplom.backend.model.rest.RequestCreateDocPattern;
 
@@ -12,7 +13,7 @@ public interface DocPatternService {
 
     void createDocPattern(RequestCreateDocPattern docPattern);
 
-    List<ClientDocPattern> getAll();
+    List<ClientDocPattern> getAll(SingleSource singleSource);
 
     List<ClientDocPattern> getDocPatternByTemplate(String template);
 

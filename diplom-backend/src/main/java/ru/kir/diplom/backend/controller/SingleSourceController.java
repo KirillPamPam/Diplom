@@ -50,9 +50,9 @@ public class SingleSourceController {
         return clientDocPattern;
     }
 
-    @RequestMapping(value = "getall/docpatterns", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody List<ClientDocPattern> getDocPattern() {
-        return docPatternService.getAll();
+    @RequestMapping(value = "getall/docpatterns/{singlename}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody List<ClientDocPattern> getDocPatterns(@PathVariable("singlename") String singleName) {
+        return docPatternService.getAll(sourceService.getSingleSource(singleName));
     }
 
     @RequestMapping(value = "getall/docpattern/{template}", method = RequestMethod.GET, produces = "application/json")

@@ -19,7 +19,7 @@ public class MainDocBuild extends Application {
         primaryStage.setScene(mainPage.getScene());
         primaryStage.setWidth(900);
         primaryStage.setHeight(600);
-        primaryStage.setTitle("Documentation build");
+        primaryStage.setTitle("DocBuild");
         primaryStage.setOnCloseRequest(event -> Platform.exit());
         primaryStage.show();
     }

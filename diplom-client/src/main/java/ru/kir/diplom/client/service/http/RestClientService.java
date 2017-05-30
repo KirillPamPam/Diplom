@@ -51,8 +51,8 @@ public class RestClientService {
         return response.getEntity(DocPattern.class);
     }
 
-    public List<DocPattern> getAllDocPatterns() {
-        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.GET_ALL_DOCPATTERN);
+    public List<DocPattern> getAllDocPatterns(String singleName) {
+        WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.GET_ALL_DOCPATTERN + singleName);
         ClientResponse response = webResource.get(ClientResponse.class);
 
         return response.getEntity(new GenericType<List<DocPattern>>() {});
@@ -65,8 +65,8 @@ public class RestClientService {
         return response.getEntity(new GenericType<List<DocPattern>>() {});
     }
 
-    public HttpResponseDescriptor createDocPattern(String name, String fragments, String style, String luValue) {
-        RequestCreateDocPattern docPattern = new RequestCreateDocPattern(style, fragments, name, luValue);
+    public HttpResponseDescriptor createDocPattern(String name, String fragments, String style, String luValue, String sourceName) {
+        RequestCreateDocPattern docPattern = new RequestCreateDocPattern(style, fragments, name, luValue, sourceName);
         WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.CREATE_DOCPATTERN);
         ClientResponse response = webResource.type(Constants.APP_JSON).post(ClientResponse.class, docPattern);
         if (response.getStatus() == Integer.parseInt(Constants.BAD_REQUEST))
@@ -143,7 +143,7 @@ public class RestClientService {
         WebResource webResource = client.resource(Constants.MAIN_PATH).path(Constants.GET_TEXT_FRAGMENT_BY_NAME + name + "/" + sourceName);
         ClientResponse response = webResource.get(ClientResponse.class);
         if (response.getStatus() == Integer.parseInt(Constants.BAD_REQUEST))
-            throw new RuntimeException(response.getEntity(HttpResponseDescriptor.class).getMessage());
+            return null;
         return response.getEntity(TextFragment.class);
     }
 

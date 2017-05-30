@@ -28,6 +28,18 @@ public class DocPattern {
     @Column(name = "lu_value")
     private String luValue;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "single_id")
+    private SingleSource singleSource;
+
+    public SingleSource getSingleSource() {
+        return singleSource;
+    }
+
+    public void setSingleSource(SingleSource singleSource) {
+        this.singleSource = singleSource;
+    }
+
     public String getLuValue() {
         return luValue;
     }

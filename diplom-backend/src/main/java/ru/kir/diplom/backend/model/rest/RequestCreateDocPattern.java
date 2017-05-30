@@ -16,6 +16,16 @@ public class RequestCreateDocPattern {
     private String style;
     @NotEmpty(message = "Required field")
     private String luValue;
+    @NotEmpty(message = "Required field")
+    private String sourceName;
+
+    public String getSourceName() {
+        return sourceName;
+    }
+
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
+    }
 
     public String getLuValue() {
         return luValue;
@@ -57,11 +67,12 @@ public class RequestCreateDocPattern {
         return Objects.equals(name, that.name) &&
                 Objects.equals(fragments, that.fragments) &&
                 Objects.equals(style, that.style) &&
-                Objects.equals(luValue, that.luValue);
+                Objects.equals(luValue, that.luValue) &&
+                Objects.equals(sourceName, that.sourceName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, fragments, style, luValue);
+        return Objects.hash(name, fragments, style, luValue, sourceName);
     }
 }

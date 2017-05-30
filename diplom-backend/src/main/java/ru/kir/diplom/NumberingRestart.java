@@ -47,7 +47,7 @@ public class NumberingRestart {
                 createNumberedParagraph(1, 1, "text on level 1" ));
 
         // Ok, lets restart numbering
-/*        long newNumId = ndp.restart(1, 0, 1);
+        long newNumId = ndp.restart(1, 0, 1);
 
         wordMLPackage.getMainDocumentPart().addObject(
                 createNumberedParagraph(newNumId, 0, "text on top level - restarted" ));
@@ -55,7 +55,7 @@ public class NumberingRestart {
         // After first using newNumId, it doesn't matter whether
         // subsequent paragraphs use that or the original numId
         wordMLPackage.getMainDocumentPart().addObject(
-                createNumberedParagraph(newNumId, 0, "text on top level - using newNumId" ));*/
+                createNumberedParagraph(newNumId, 0, "text on top level - using newNumId" ));
 
         wordMLPackage.getMainDocumentPart().addObject(
                 createNumberedParagraph(1, 0, "text on top level - using original NumId" ));
@@ -117,7 +117,7 @@ public class NumberingRestart {
     }
 
 
-    static final String initialNumbering = "<w:numbering xmlns:ve=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" xmlns:w10=\"urn:schemas-microsoft-com:office:word\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:wne=\"http://schemas.microsoft.com/office/word/2006/wordml\">"
+    public static final String initialNumbering = "<w:numbering xmlns:ve=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" xmlns:w10=\"urn:schemas-microsoft-com:office:word\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:wne=\"http://schemas.microsoft.com/office/word/2006/wordml\">"
             + "<w:abstractNum w:abstractNumId=\"0\">"
             + "<w:nsid w:val=\"2DD860C0\"/>"
             + "<w:multiLevelType w:val=\"multilevel\"/>"
@@ -125,7 +125,7 @@ public class NumberingRestart {
             + "<w:lvl w:ilvl=\"0\">"
             + "<w:start w:val=\"1\"/>"
             + "<w:numFmt w:val=\"decimal\"/>"
-            + "<w:lvlText w:val=\"%1.\"/>"
+            + "<w:lvlText w:val=\"%1)\"/>"
             + "<w:lvlJc w:val=\"left\"/>"
             + "<w:pPr>"
             + "<w:ind w:left=\"360\" w:hanging=\"360\"/>"

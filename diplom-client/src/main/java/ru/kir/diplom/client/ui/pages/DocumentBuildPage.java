@@ -207,7 +207,7 @@ public class DocumentBuildPage {
 
         patterns.setOnAction(event -> {
             TablePage tablePage = new TablePage(stage, fragmentPage);
-            tablePage.initData(clientService.getAllDocPatterns());
+            tablePage.initData(clientService.getAllDocPatterns(singleName));
 
             stage.setScene(tablePage.getScene());
         });
@@ -297,14 +297,20 @@ public class DocumentBuildPage {
             e.printStackTrace();
         }
 
+        int index;
         TextFragment annotation = clientService.getTextFragmentByName("АННОТАЦИЯ - " + docName.substring(docName.lastIndexOf("\\") + 1), singleName);
-        documentPart.addObject(WordHelper.createPar(objectFactory, annotation.getFragmentName().substring(0, annotation.getFragmentName().indexOf("-") - 1), sectionProp()));
-        WordHelper.addBreak(objectFactory, documentPart, STBrType.TEXT_WRAPPING);
-        List<String> annotationPar = WordHelper.getWordParagraphs(annotation.getText());
-        annotationPar.forEach(par -> documentPart.addObject(WordHelper.createPar(objectFactory, par, parTextProp("225"))));
-        int index = 44 + annotationPar.size() + 4;
+        if (annotation != null) {
+            documentPart.addObject(WordHelper.createPar(objectFactory, annotation.getFragmentName().substring(0, annotation.getFragmentName().indexOf("-") - 1), sectionProp()));
+            WordHelper.addBreak(objectFactory, documentPart, STBrType.TEXT_WRAPPING);
+            List<String> annotationPar = WordHelper.getWordParagraphs(annotation.getText());
+            annotationPar.forEach(par -> documentPart.addObject(WordHelper.createPar(objectFactory, par, parTextProp("225"))));
+            WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
+            index = 44 + annotationPar.size() + 4;
+        }
+        else
+            index = 41 + 4;
 
-        WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
+
         documentPart.addObject(WordHelper.createPar(objectFactory, "СОДЕРЖАНИЕ", sectionProp()));
         WordHelper.addBreak(objectFactory, documentPart, STBrType.PAGE);
 
@@ -387,7 +393,7 @@ public class DocumentBuildPage {
             WordHelper.generateToc(wordprocessingMLPackage, index);
             wordprocessingMLPackage.save(new File(docName + ".docx"));
             clientService.createDocPattern(docName.substring(docName.lastIndexOf("\\") + 1),
-                    builder.toString(), styles.getValue(), luField.getText());
+                    builder.toString(), styles.getValue(), luField.getText(), singleName);
         } catch (Docx4JException e) {
             e.printStackTrace();
             return false;

@@ -10,6 +10,15 @@ public class SingleSource {
     private String id;
     private String singleName;
     private List<TextFragment> textFragments;
+    private List<DocPattern> docPatterns;
+
+    public List<DocPattern> getDocPatterns() {
+        return docPatterns;
+    }
+
+    public void setDocPatterns(List<DocPattern> docPatterns) {
+        this.docPatterns = docPatterns;
+    }
 
     public String getId() {
         return id;
@@ -42,20 +51,12 @@ public class SingleSource {
         SingleSource that = (SingleSource) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(singleName, that.singleName) &&
-                Objects.equals(textFragments, that.textFragments);
+                Objects.equals(textFragments, that.textFragments) &&
+                Objects.equals(docPatterns, that.docPatterns);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, singleName, textFragments);
-    }
-
-    @Override
-    public String toString() {
-        return "SingleSource{" +
-                "id='" + id + '\'' +
-                ", singleName='" + singleName + '\'' +
-                ", textFragments=" + textFragments +
-                '}';
+        return Objects.hash(id, singleName, textFragments, docPatterns);
     }
 }

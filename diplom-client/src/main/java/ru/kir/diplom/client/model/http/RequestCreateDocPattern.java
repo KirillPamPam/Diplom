@@ -10,12 +10,22 @@ public class RequestCreateDocPattern {
     private String fragments;
     private String style;
     private String luValue;
+    private String sourceName;
 
-    public RequestCreateDocPattern(String style, String fragments, String name, String luValue) {
+    public RequestCreateDocPattern(String style, String fragments, String name, String luValue, String sourceName) {
+        this.sourceName = sourceName;
         this.style = style;
         this.fragments = fragments;
         this.name = name;
         this.luValue = luValue;
+    }
+
+    public String getSourceName() {
+        return sourceName;
+    }
+
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
     }
 
     public String getLuValue() {
@@ -58,11 +68,12 @@ public class RequestCreateDocPattern {
         return Objects.equals(name, that.name) &&
                 Objects.equals(fragments, that.fragments) &&
                 Objects.equals(style, that.style) &&
-                Objects.equals(luValue, that.luValue);
+                Objects.equals(luValue, that.luValue) &&
+                Objects.equals(sourceName, that.sourceName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, fragments, style, luValue);
+        return Objects.hash(name, fragments, style, luValue, sourceName);
     }
 }

@@ -1,9 +1,11 @@
 package ru.kir.diplom.backend.wordprocess;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.toc.Toc;
 import org.docx4j.toc.TocException;
 import org.docx4j.toc.TocGenerator;
@@ -26,6 +28,10 @@ public class TestSaver {
         MainDocumentPart document = docxPackage.getMainDocumentPart();
 
         List<String> fragmentNames = Arrays.asList("Введение", "Назначение разработки");
+
+        NumberingDefinitionsPart ndp = new NumberingDefinitionsPart();
+        docxPackage.getMainDocumentPart().addTargetPart(ndp);
+        ndp.setJaxbElement((Numbering) XmlUtils.unmarshalString(NumberingRestart.initialNumbering));
 
         addPageBreak(docxPackage);
 
@@ -51,9 +57,21 @@ public class TestSaver {
             document.addObject(createPar(objectFactory, "sdjkfhjskdfjsdjghfjhsgdjhgsjksdhfchjsgfhjgsd", textProperties1));
         });
 
-        document.addObject(NumberingRestart.createNumberedParagraph(2, 0, "one"));
-        document.addObject(NumberingRestart.createNumberedParagraph(2, 0, "two"));
-        document.addObject(NumberingRestart.createNumberedParagraph(2, 0, "three"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "one"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "two"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "three"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "three"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "three"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "three"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "three"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "three"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "three"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "three"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "three"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "three"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "three"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "three"));
+        document.addObject(NumberingRestart.createNumberedParagraph(1, 0, "three"));
 
         generateToc(docxPackage);
 

@@ -5,8 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kir.diplom.backend.dao.DocPatternDao;
+import ru.kir.diplom.backend.dao.SingleSourceDao;
 import ru.kir.diplom.backend.dao.StyleDao;
 import ru.kir.diplom.backend.model.DocPattern;
+import ru.kir.diplom.backend.model.SingleSource;
 import ru.kir.diplom.backend.model.client.ClientDocPattern;
 import ru.kir.diplom.backend.model.rest.RequestCreateDocPattern;
 
@@ -23,6 +25,8 @@ public class DocPatternServiceImpl implements DocPatternService {
     private DocPatternDao docPatternDao;
     @Autowired
     private StyleDao styleDao;
+    @Autowired
+    private SingleSourceDao singleSourceDao;
     private ModelMapper mapper = new ModelMapper();
 
     @Override
@@ -32,12 +36,14 @@ public class DocPatternServiceImpl implements DocPatternService {
         savedPattern.setFragments(docPattern.getFragments());
         savedPattern.setLuValue(docPattern.getLuValue());
         savedPattern.setName(docPattern.getName());
-        docPatternDao.createDocPattern(savedPattern);
+        SingleSource singleSource = singleSourceDao.getSingleSourceByName(docPattern.getSourceName());
+        savedPattern.setSingleSource(singleSource);
+        docPatternDao.createDocPattern(savedPattern, singleSource);
     }
 
     @Override
-    public List<ClientDocPattern> getAll() {
-        List<DocPattern> docPatterns = docPatternDao.getAll();
+    public List<ClientDocPattern> getAll(SingleSource singleSource) {
+        List<DocPattern> docPatterns = docPatternDao.getAll(singleSource);
         List<ClientDocPattern> clientDocPatterns = new ArrayList<>();
         docPatterns.forEach(pattern -> clientDocPatterns.add(mapper.map(pattern, ClientDocPattern.class)));
 

@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -57,7 +58,7 @@ public class MainPage {
         sourceButtons.setAlignment(Pos.CENTER_RIGHT);
         sourceButtons.getChildren().addAll(addSource, correctSource, removeSource);
 
-        Label sourceLabel = new Label("Единые источники");
+        Label sourceLabel = new Label("Нзвание программных продуктов");
         sourceLabel.setFont(Font.font("Arial", 15));
         GridPane.setHalignment(sourceLabel, HPos.CENTER);
 
@@ -118,19 +119,24 @@ public class MainPage {
         gridPane.setHgap(10);
         gridPane.setVgap(10);
 
-        ColumnConstraints col1 = new ColumnConstraints(115, 115, Double.MAX_VALUE);
-        ColumnConstraints col2 = new ColumnConstraints(235, 235, Double.MAX_VALUE);
-        gridPane.getColumnConstraints().addAll(col1, col2);
+        ColumnConstraints col1 = new ColumnConstraints(350, 350, Double.MAX_VALUE);
+     //   ColumnConstraints col2 = new ColumnConstraints(235, 235, Double.MAX_VALUE);
+        gridPane.getColumnConstraints().addAll(col1);
 
         Label name = new Label("Название");
-        GridPane.setHalignment(name, HPos.RIGHT);
         TextField nameField = new TextField();
-        nameField.setMaxSize(200, 15);
+        nameField.setPrefSize(275, 15);
         Button operation = new Button(button);
 
-        gridPane.add(name, 0, 0);
-        gridPane.add(nameField, 1, 0);
-        gridPane.add(operation, 1, 1);
+        GridPane.setHalignment(operation, HPos.CENTER);
+
+        HBox box = new HBox(10);
+        box.getChildren().addAll(name, nameField);
+        box.setAlignment(Pos.CENTER);
+
+        /*gridPane.add(name, 0, 0);*/
+        gridPane.add(box, 0, 0);
+        gridPane.add(operation, 0, 1);
 
         Scene createScene = new Scene(gridPane, 350, 200);
 
